@@ -172,6 +172,25 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 
 - None.
 
+## Audit fixes (2026-11-14)
+
+- Stage 10 audit incorrectly-rendered severity color bars on guidance and
+  relay cards: `app.css` referenced undefined `--sev-*` variables; fixed to
+  `var(--sev-*-fill)` (commit `d3e2a51`). Regression test in
+  `tests/test_app_css.py` fails when any `var(--...)` reference is not
+  defined in the stylesheet.
+- Audit finding "guidance without a source" (48 TODO-sourced suggested
+  actions): no real sources exist for these actions yet, and inventing URLs
+  is forbidden (AGENTS.md hard rule 4). Decision: keep the actions hidden
+  from users until the safety owner finds sourced actions (the state chosen
+  by the guidance safety review, see docs/GUIDANCE_REVIEW.md). The gate is
+  now enforced by regression tests in `tests/test_sources_required.py`
+  (`test_no_guidance_result_exposes_an_unsourced_action` and
+  `test_guidance_card_shows_fallback_when_all_actions_are_unsourced`).
+  Tracked in "Needs a source" above; `check_guidance` still lists the 48
+  actions as TODO. All sources remain `verified: false` pending human
+  verification.
+
 ## Known issues
 
 - `CheckIn` has no `is_simulated` field (the spec does not list one). Demo
