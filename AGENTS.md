@@ -22,6 +22,19 @@ unrelated code.
 9. Every feature ships with tests. Run `pytest` before declaring done.
 10. At the end of each task, update docs/PROGRESS.md (done, in progress, 
 known issues, next).
+## Engine rules (Stage 3 — personal baseline)
+- Severity order: gray < green < yellow < orange < red. The final severity is
+  the worse of the personal-baseline severity and the absolute-limit severity.
+- The personal baseline needs enough history (placeholder: at least 5 valid
+  readings in the last 14 days). When history is insufficient the personal
+  severity is unavailable, but an absolute limit breach still escalates the
+  final severity — both reasons are reported together.
+- Indicator keys (placeholder): resting_hr, sleep_hours, temperature, mood,
+  exercise_min, spo2. See data/indicators.json.
+- Every z-score boundary, MAD floor and limit threshold is a placeholder, not
+  a clinical value. data/limits.json marks entries with `"placeholder": true`
+  and data/sources.json holds `verified: false` stubs; see docs/INDICATORS.md.
+
 ## Domain spec
 Source: section 4 of "AstroPulse: OpenCode Build Plan".
 

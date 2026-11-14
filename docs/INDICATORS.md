@@ -34,3 +34,8 @@ and verified (see AGENTS.md hard rules 4 and 6).
 
 The `min_valid`, `max_valid`, `mad_floor`, `normal_center` and `normal_wobble`
 values are the only numbers in the file. None of them is a clinical limit.
+
+Absolute limit thresholds live in `data/limits.json` (each entry marked
+`"placeholder": true`) and matching entries in `data/sources.json` are
+`verified: false` stubs titled "PLACEHOLDER: replace with a real cited source".
+Replace all placeholder limits and ranges with sourced values before real use.

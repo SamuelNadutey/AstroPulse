@@ -1,1 +1,8 @@
-[]
+[
+  {"id": "placeholder-resting_hr", "indicator": "resting_hr", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
+  {"id": "placeholder-sleep_hours", "indicator": "sleep_hours", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
+  {"id": "placeholder-temperature", "indicator": "temperature", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
+  {"id": "placeholder-mood", "indicator": "mood", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
+  {"id": "placeholder-exercise_min", "indicator": "exercise_min", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
+  {"id": "placeholder-spo2", "indicator": "spo2", "title": "PLACEHOLDER: replace with a real cited source", "verified": false}
+]

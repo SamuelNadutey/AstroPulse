@@ -7,8 +7,8 @@ Decision support, not a diagnosis. Read AGENTS.md before doing anything.
 Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.pdf).
 
 - [x] Stage 0: Project setup and AGENTS.md
-- [ ] Stage 1: Data layer, indicator config and the simulator (built, review pending, not tagged)
-- [ ] Stage 2: The status engine (baseline and severity)
+- [x] Stage 1: Data layer, indicator config and the simulator
+- [x] Stage 2: The status engine (baseline and severity)
 - [ ] Stage 3: Check-in flow and environment profiles
 - [ ] Stage 4: The body map and status dashboard
 - [ ] Stage 5: Trend charts
@@ -27,33 +27,32 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
     `core/static/core/app.css`, `core/static/vendor/` (HTMX and Plotly basic),
     `engine/` and `simulator/` placeholders, empty `data/` JSON files, smoke test,
     `.gitignore`.
-- Stage 1 built (not yet reviewed or tagged):
+- Stage 1 complete (commit `c696b19`, message "stage-1"):
   - `data/indicators.json`: six indicators from the build plan (resting_hr,
     sleep_hours, temperature, mood, exercise_min, spo2). All numbers are placeholders.
   - `docs/INDICATORS.md`: documents the schema and the placeholder status.
   - `core/models.py`: `CrewMember`, `Reading` (unique on crew member, indicator
-    and date), `CheckIn`. Migration `core/migrations/0001_initial.py`.
+    and date), `CheckIn`. Migrations `0001_initial` and `0002_checkin_unique_per_day`.
   - `simulator/generator.py`: `generate(scenario, days=21, seed=42)` for
     calm_week, drift_day6, fever_blackout, isolation_mood. Days are 1 to 21.
     Uses `numpy.random.default_rng(seed)`. Values are clamped to valid ranges.
   - `core/management/commands/seed_demo.py`: `seed_demo --scenario <name> [--reset]`.
     Creates or reuses "Demo crew (SIMULATED)". `--reset` clears only that crew
     member's data. Prints a 21-day table.
-  - `tests/test_simulator.py` (15 tests) and `tests/test_seed_demo.py` (11 tests).
-  - AGENTS.md: section 4 of the build plan pasted into the Domain spec.
-  - Migration `core/migrations/0002_checkin_unique_per_day.py`: one check-in per
-    crew member per day.
-- Stage 1 review fixes (review findings 1, 2, 3, 4 and 6):
-  - `seed_demo` refuses to run without `--reset` when the demo crew exists,
-    so scenarios cannot silently mix. `--reset` replaces the demo data.
-  - Clamping test now asserts that a bound is actually reached.
-  - Tests added for the unique constraints on `Reading` and `CheckIn`.
-  - Progress counts corrected.
-- Second review fixes:
-  - `seed_demo` docstring updated to describe the `--reset` requirement.
-  - Guard simplified to check for the demo crew member's existence.
-- `pytest`: 29 passed.
-- Acceptance: `seed_demo --scenario drift_day6 --reset` prints 21 days for six indicators.
+  - `tests/test_simulator.py` and `tests/test_seed_demo.py`.
+- Stage 2 (personal-baseline status engine, pure Python + NumPy, no Django imports):
+  - `engine/baseline.py`: `build_baseline(values, window=14, min_points=5)` and
+    `Baseline(median, mad, n, enough_data)`.
+  - `engine/scoring.py`: `robust_z` and `signed_bad_z` (1.4826 * MAD with a floor;
+    unfavorable deviation only, never negative).
+  - `engine/limits.py`: `check_limits(indicator_key, value, limits)` returns a
+    severity or None; takes an already-parsed mapping (file loading outside engine).
+  - `engine/status.py`: `evaluate(indicator, history_values, new_value, limits)`
+    returns `StatusResult` with final severity = worse of personal and limit.
+  - `tests/test_engine.py`: baseline/severity behaviors, limits, data-file checks,
+    calm_week no-false-alarm, and adversarial cases.
+  - Placeholder limit data: `data/limits.json` entries marked `"placeholder": true`;
+    `data/sources.json` has matching `verified: false` stubs.
 
 ## Decisions
 
@@ -64,30 +63,41 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - Demo readings use environment `station`. The four environment keys are
   hardcoded as choices in `core/models.py` until `data/environments.json` is
   filled in Stage 3.
+- Engine treats only the most recent window of readings; a bare string/bytes or
+  non-sequence history is rejected (not iterated) and a zero/non-finite MAD floor
+  must not divide by zero or report a fake green.
 
 ## In progress
 
-- Stage 1 is ready for final review. Tag `stage-1` after one more pass with
-  an independent model (per build plan review rule).
+- None. Local WIP (engine + fixes) is being reconciled onto stage-1.
 
 ## Known issues
 
-- No `stage-0` git tag exists yet. The commit is there, but `git tag` is empty.
-- The vendored Plotly file is `core/static/vendor/plotly-basic.min.js`. The
-  build plan names `plotly.min.js` (Stage 0 Step C and Stage 5). Decide
-  whether to keep the basic bundle or replace it.
 - `CheckIn` has no `is_simulated` field (the spec does not list one). Demo
-  check-ins are marked only by their note, "SIMULATED demo check-in". Consider
-  adding the field at review.
-- Review items deferred: `Reading.indicator_key` is not validated against
-  `indicators.json` (Stage 3); CrewMember name is not unique; the demo dates
-  depend on today's date; `.gitattributes` for line endings; negative
-  `normal_wobble` is not rejected.
-- `environments.json`, `limits.json`, `sources.json` and `guidance.json` are
-  still empty placeholders. They are filled in Stages 3 and 6.
-- All thresholds and scenario magnitudes are placeholders (see docs/INDICATORS.md).
+  check-ins are marked only by their note, "SIMULATED demo check-in".
+- `Reading.indicator_key` is not validated against `indicators.json` (Stage 3).
+- `environments.json` and `guidance.json` are still empty placeholders.
+- All thresholds, ranges, MAD floors and scenario magnitudes are placeholders,
+  not clinical values (see docs/INDICATORS.md and "Needs a source").
+- The personal-baseline engine has no dates. Duplicate calendar days are not
+  collapsed; callers must pass one value per day. Dated pairs and date strings
+  are rejected as non-numeric, not parsed.
+- `drift_day6` (resting_hr, seed 42): personal-baseline severity spikes at day 6
+  then fluctuates and adapts (baseline median rises), so it is not monotonically
+  rising over time; absolute drift vs. adaptive baseline needs care in UI/reasoning.
+
+## Needs a source
+
+- Replace placeholder limits with sourced values (resolved in Stage 6).
+  `data/limits.json` thresholds, valid ranges and MAD floors are placeholders.
+  `data/sources.json` holds `verified: false` stubs titled
+  "PLACEHOLDER: replace with a real cited source"; no real citation, URL or
+  publisher is invented. Limit reasons currently say "(see source)" and must be
+  wired to real source ids once cited values exist.
 
 ## Next
 
-1. Run the Stage 1 review prompt, fix findings, and tag `stage-1`.
-2. Stage 2: the status engine (plan first, with the Stage 2 prompt).
+1. Run `pytest` with project dependencies installed and fix any integration issues
+   from reconciling engine/data with stage-1.
+2. Stage 3 (build plan): check-in flow and environment profiles.
+3. Stage 6: replace placeholder limits with sourced values (see above).
