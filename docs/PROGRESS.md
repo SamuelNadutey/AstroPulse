@@ -14,7 +14,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - [x] Stage 5: Trend charts
 - [x] Stage 6: Sources and cited guidance
 - [x] Stage 7: Drift detection and forecasting
-- [ ] Stage 8: Blackout mode and the relay summary
+- [x] Stage 8: Blackout mode and the relay summary
 - [ ] Stage 9: Actions and the progress view
 - [ ] Stage 10: Hardening, accessibility and the offline audit
 - [ ] Stage 11: Stretch, on-device language model rewording
@@ -324,6 +324,45 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - `tests/test_bodymap.py`: added the acceptance test that day 21 chest is
     yellow from drift (the adaptive baseline would otherwise show green).
   - Full suite: 148 passed, 1 xfailed.
+- Stage 8 complete (blackout mode and exportable relay summary):
+  - `core/models.py`: new `AppState` singleton (current global blackout toggle)
+    and `RelayItem` model with `created_at`, `indicator_key`, `severity`,
+    `headline`, `action_taken`, `contact_ground_open`, and `resolved` fields.
+    A partial unique constraint prevents duplicate open items for the same
+    crew member, indicator, and date.
+  - `core/context_processors.py`: `app_state` processor adds `app_blackout` to
+    every template context so the header toggle and offline banner work on
+    every page.
+  - `core/services.py`: `current_blackout()`, `set_blackout()`,
+    `blackout_active_for()`, and `ensure_relay_item()` helpers. Relay items are
+    created/updated during `run_status_for` when blackout is active for the
+    evaluated date (global toggle on OR that day's check-in was in blackout).
+    An item is created when severity is orange/red or the selected guidance
+    contains contact-ground text.
+  - `core/views.py`: `blackout_toggle`, `relay`, `relay_resolve`, and
+    `relay_export` views. The export returns `relay_summary_<date>.txt` as a
+    plain-text download with date range, environment, flagged indicators,
+    actions taken, open contact-ground items, and the required safety line.
+  - `core/urls.py`: added `/blackout/toggle/`, `/relay/`,
+    `/relay/<id>/resolve/`, and `/relay/export/`.
+  - `core/templates/core/base.html`: header blackout toggle (checkbox submits
+    the form on change) and a persistent offline banner with icon + text when
+    blackout is on; SIMULATED badge shown as usual.
+  - `core/templates/core/relay.html` and `_relay_item.html`: relay summary
+    page with open items, last-7-day flags, unresolved contact-ground items,
+    resolve-via-HTMX form, download link, and copy-to-clipboard button
+    (inline JS, no external resources).
+  - `core/static/core/app.css`: styles for the blackout toggle, offline banner,
+    relay cards, severity-coloured left borders, and resolve form.
+  - `core/forms.py`: check-in blackout checkbox defaults to the current global
+    `AppState.blackout` value.
+  - `tests/test_relay.py`: 12 tests covering banner visibility, toggle
+    persistence, check-in default, relay item creation without duplicates,
+    resolve-with-note, export content and filename, no-export-until-requested,
+    and `fever_blackout` acceptance.
+  - `tests/test_smoke.py`: marked smoke tests with `@pytest.mark.django_db`
+    because the new context processor touches the database.
+  - Full suite: 160 passed, 1 xfailed.
 
 ## Acceptance check
 
@@ -341,6 +380,14 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   heart-rate rise (personal severity green), but drift keeps chest yellow —
   the story the detector exists to tell. `calm_week` never drifts across 20
   seeds and all six indicators.
+- Stage 8 acceptance (`seed_demo --scenario fever_blackout --reset`, then
+  enable blackout): viewing day 10 (`/status/?date=2026-11-03`) while blackout
+  is active creates a temperature `RelayItem` with severity red and
+  `contact_ground_open=True`. `/relay/export/` downloads a plain-text
+  `relay_summary_<date>.txt` containing the flagged temperature, the
+  contact-ground item, and the line "Decision support, not a diagnosis.
+  Simulated demonstration data." The offline banner appears on every page
+  while blackout is on and hides when it is toggled off.
 
 ## Needs a source
 
@@ -442,5 +489,5 @@ and flip `verified` to `true` by hand after checking the page:
 1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
    (pending sign-off; findings by rule id). Includes the drift-guidance gate
    (`DRIFT_GUIDANCE_APPROVED`) which must be flipped after sign-off.
-2. Polish: friendlier engine reason wording and per-indicator units in reasons.
-3. Stage 8: Blackout mode and the relay summary.
+2. Stage 9: Actions and the progress view.
+3. Polish: friendlier engine reason wording and per-indicator units in reasons.

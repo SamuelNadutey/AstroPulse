@@ -23,7 +23,7 @@ from engine.status import (
     evaluate,
 )
 
-from core.models import Reading
+from core.models import AppState, Reading, RelayItem
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -101,6 +101,99 @@ def get_environment(key: str | None) -> dict:
     return environments[0]
 
 
+def current_blackout() -> bool:
+    """Return the current global blackout state from the singleton AppState."""
+    state, _ = AppState.objects.get_or_create(pk=1)
+    return bool(state.blackout)
+
+
+def set_blackout(value: bool) -> None:
+    """Persist the global blackout toggle."""
+    AppState.objects.update_or_create(pk=1, defaults={"blackout": bool(value)})
+
+
+def blackout_active_for(crew_member, date) -> bool:
+    """True if blackout applies to ``date`` for ``crew_member``.
+
+    Blackout is active when the global toggle is on OR when the check-in
+    recorded for that date was saved in blackout mode.
+    """
+    if current_blackout():
+        return True
+    from core.models import CheckIn
+
+    return CheckIn.objects.filter(
+        crew_member=crew_member, date=date, in_blackout=True
+    ).exists()
+
+
+def _guidance_headline_and_contact(indicator_key: str, status_result) -> tuple[str, str]:
+    """Return (headline, contact_ground_text) for a status result, if any."""
+    from core.guidance import select_guidance
+
+    wrapper = type("StatusWrapper", (), {
+        "severity": status_result.severity,
+        "indicator_key": indicator_key,
+        "drift": getattr(status_result, "drift", False),
+    })()
+    guidance = select_guidance(wrapper)
+    if guidance is None:
+        return "", ""
+    return guidance.headline, guidance.contact_ground_text
+
+
+def ensure_relay_item(
+    crew_member,
+    for_date,
+    indicator_key: str,
+    status_result,
+) -> RelayItem | None:
+    """Create or update an open RelayItem during blackout.
+
+    Items are created when severity is orange/red or when the selected
+    guidance contains contact-ground text. Only one unresolved item exists
+    per (crew_member, indicator_key, for_date); a new evaluation updates it.
+    Returns the item or None when no relay is needed.
+    """
+    if status_result is None:
+        return None
+    severity = status_result.severity
+    if severity not in (SEVERITY_ORANGE, SEVERITY_RED, SEVERITY_YELLOW):
+        return None
+
+    headline, contact_text = _guidance_headline_and_contact(indicator_key, status_result)
+    has_contact = bool(contact_text.strip())
+    if severity not in (SEVERITY_ORANGE, SEVERITY_RED) and not has_contact:
+        return None
+
+    reason = " ".join(getattr(status_result, "reasons", []))
+    defaults = {
+        "severity": severity,
+        "headline": headline or reason or f"{indicator_key} flagged at {severity}",
+        "reason": reason,
+        "contact_ground_open": has_contact,
+    }
+
+    existing = RelayItem.objects.filter(
+        crew_member=crew_member,
+        indicator_key=indicator_key,
+        for_date=for_date,
+        resolved=False,
+    ).first()
+    if existing is not None:
+        for attr, value in defaults.items():
+            setattr(existing, attr, value)
+        existing.save(update_fields=list(defaults.keys()) + ["updated_at"])
+        return existing
+
+    return RelayItem.objects.create(
+        crew_member=crew_member,
+        for_date=for_date,
+        indicator_key=indicator_key,
+        **defaults,
+    )
+
+
 def _engine_indicator(config: dict) -> Indicator:
     """Map an indicators.json entry to the engine's Indicator dataclass.
 
@@ -171,17 +264,18 @@ def run_status_for(crew_member, date) -> list[dict]:
                 limits,
                 long_history=long_history,
             )
-        entries.append(
-            {
-                "key": key,
-                "label": config["label"],
-                "unit": config["unit"],
-                "body_region": config["body_region"],
-                "value": value,
-                "result": result,
-                "is_simulated": bool(today is not None and today.is_simulated),
-            }
-        )
+        entry = {
+            "key": key,
+            "label": config["label"],
+            "unit": config["unit"],
+            "body_region": config["body_region"],
+            "value": value,
+            "result": result,
+            "is_simulated": bool(today is not None and today.is_simulated),
+        }
+        if blackout_active_for(crew_member, date):
+            ensure_relay_item(crew_member, date, key, result)
+        entries.append(entry)
     return entries
 
 

@@ -10,14 +10,14 @@ No engine math lives here: status results come from core.services
 from datetime import timedelta
 from types import SimpleNamespace
 
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.db import transaction
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from core.forms import CheckInForm
-from core.models import CheckIn, CrewMember, Reading
+from core.models import CheckIn, CrewMember, Reading, RelayItem
 from core.charts import build_trend_figure, trend_summary
 from core.guidance import select_guidance
 from core.services import (
@@ -27,10 +27,13 @@ from core.services import (
     SEVERITY_ORANGE,
     SEVERITY_RED,
     SEVERITY_YELLOW,
+    blackout_active_for,
+    current_blackout,
     indicator_trend,
     load_indicators,
     region_statuses,
     run_status_for,
+    set_blackout,
     worst_severity,
     BASELINE_DAYS,
 )
@@ -180,7 +183,10 @@ def checkin(request):
             return redirect("core:status")
         form.link_errors_to_aria()
     else:
-        form = CheckInForm(environment=request.GET.get("environment", "station"))
+        form = CheckInForm(
+            environment=request.GET.get("environment", "station"),
+            initial={"blackout": current_blackout()},
+        )
     return render(request, "core/checkin.html", {"form": form})
 
 
@@ -321,3 +327,156 @@ def trend_chart(request, indicator_key: str):
     Swapped into #trend-container by the chart selector on /trend/<key>/.
     """
     return trend(request, indicator_key)
+
+
+def blackout_toggle(request):
+    """Toggle the global blackout state from the header switch.
+
+    Accepts POST (and GET for simplicity in tests). Redirects back to the
+    referring page, or home if no referrer is provided.
+    """
+    if request.method == "POST":
+        set_blackout(request.POST.get("blackout") == "on")
+    else:
+        set_blackout(request.GET.get("blackout") == "on")
+    return redirect(request.META.get("HTTP_REFERER") or "core:home")
+
+
+def _relay_context(crew_member, date):
+    """Build the context shared by /relay/ and the export view."""
+    week_start = date - timedelta(days=6)
+    open_items = RelayItem.objects.filter(
+        crew_member=crew_member, resolved=False
+    ).order_by("-for_date", "indicator_key")
+    recent_items = RelayItem.objects.filter(
+        crew_member=crew_member,
+        for_date__gte=week_start,
+        for_date__lte=date,
+        severity__in=(SEVERITY_ORANGE, SEVERITY_RED),
+    ).order_by("-for_date", "indicator_key")
+    contact_open = RelayItem.objects.filter(
+        crew_member=crew_member, contact_ground_open=True, resolved=False
+    ).order_by("-for_date", "indicator_key")
+    any_simulated = Reading.objects.filter(
+        crew_member=crew_member,
+        recorded_at__gte=week_start,
+        recorded_at__lte=date,
+        is_simulated=True,
+    ).exists()
+    return {
+        "crew": crew_member,
+        "date": date,
+        "open_items": open_items,
+        "recent_items": recent_items,
+        "contact_open": contact_open,
+        "any_simulated": any_simulated,
+    }
+
+
+def relay(request):
+    """Relay summary page: open items, recent flags, unresolved contact-ground."""
+    crew = _current_crew()
+    if crew is None:
+        return render(request, "core/relay.html", {"crew": None})
+    date = _clean_date(request.GET.get("date"))
+    # Ensure relay items are current for the requested date if blackout is on.
+    if blackout_active_for(crew, date):
+        run_status_for(crew, date)
+    context = _relay_context(crew, date)
+    return render(request, "core/relay.html", context)
+
+
+def relay_resolve(request, item_id: int):
+    """Mark a relay item resolved with an optional note (HTMX-aware)."""
+    item = get_object_or_404(RelayItem, pk=item_id)
+    if request.method == "POST":
+        note = request.POST.get("note", "").strip()
+        item.resolved = True
+        item.resolved_at = timezone.now()
+        item.resolved_note = note
+        item.save(update_fields=["resolved", "resolved_at", "resolved_note", "updated_at"])
+    if request.headers.get("HX-Request"):
+        return render(request, "core/_relay_item.html", {"item": item})
+    return redirect("core:relay")
+
+
+def _format_relay_summary(context) -> str:
+    """Render the relay summary as plain text for radio read-back."""
+    lines: list[str] = []
+    crew = context.get("crew")
+    if crew is None:
+        return "No crew member selected.\n"
+
+    date = context["date"]
+    week_start = date - timedelta(days=6)
+    lines.append(f"AstroPulse relay summary")
+    lines.append(f"Crew: {crew.name}")
+    lines.append(f"Date range: {week_start.isoformat()} to {date.isoformat()}")
+
+    # Environment for the requested date; fall back to the most recent check-in.
+    from core.models import CheckIn
+
+    checkin = CheckIn.objects.filter(crew_member=crew, date=date).first()
+    if checkin is None:
+        checkin = CheckIn.objects.filter(crew_member=crew).order_by("-date").first()
+    env = checkin.environment if checkin else "unknown"
+    lines.append(f"Environment: {env}")
+    lines.append("")
+
+    open_items = list(context["open_items"])
+    recent_items = list(context["recent_items"])
+    contact_open = list(context["contact_open"])
+
+    if recent_items:
+        lines.append("Flagged indicators (last 7 days):")
+        for item in recent_items:
+            display = SEVERITY_DISPLAY.get(item.severity, {"word": item.severity})
+            lines.append(f"- {item.indicator_key}: {display['word']} (severity {item.severity})")
+            if item.headline:
+                lines.append(f"  {item.headline}")
+            if item.reason:
+                lines.append(f"  Reason: {item.reason}")
+            if item.action_taken:
+                lines.append(f"  Action taken: {item.action_taken}")
+        lines.append("")
+    else:
+        lines.append("No flagged indicators in the last 7 days.")
+        lines.append("")
+
+    if contact_open:
+        lines.append("Open contact-ground items:")
+        for item in contact_open:
+            lines.append(f"- {item.indicator_key} on {item.for_date.isoformat()}: {item.headline}")
+        lines.append("")
+
+    if open_items:
+        lines.append(f"Total open relay items: {len(open_items)}")
+        for item in open_items:
+            lines.append(f"- {item.indicator_key} {item.for_date.isoformat()}: {item.headline}")
+        lines.append("")
+
+    if context.get("any_simulated"):
+        lines.append("Decision support, not a diagnosis. Simulated demonstration data.")
+    else:
+        lines.append("Decision support, not a diagnosis.")
+    lines.append("")
+    lines.append("Data stays on this device. Export generated only on request.")
+    return "\n".join(lines)
+
+
+def relay_export(request):
+    """Download the relay summary as a plain-text file."""
+    crew = _current_crew()
+    if crew is None:
+        text = "No crew member selected.\n"
+    else:
+        date = _clean_date(request.GET.get("date"))
+        if blackout_active_for(crew, date):
+            run_status_for(crew, date)
+        context = _relay_context(crew, date)
+        text = _format_relay_summary(context)
+
+    filename = f"relay_summary_{timezone.localdate().isoformat()}.txt"
+    response = HttpResponse(text, content_type="text/plain; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

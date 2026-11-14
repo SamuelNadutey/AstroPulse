@@ -80,3 +80,64 @@ class CheckIn(models.Model):
 
     def __str__(self) -> str:
         return f"{self.crew_member} check-in {self.date}"
+
+
+class AppState(models.Model):
+    """Singleton application state.
+
+    Holds the current crew-facing toggle state such as blackout mode.
+    Only one row should ever exist; views use get_or_create(id=1).
+    """
+
+    blackout = models.BooleanField(
+        default=False,
+        help_text="Current blackout state: no contact with ground.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Application state"
+        verbose_name_plural = "Application state"
+
+    def __str__(self) -> str:
+        return f"AppState blackout={self.blackout}"
+
+
+class RelayItem(models.Model):
+    """One item to relay to ground once comms are restored.
+
+    Created when an indicator is flagged during blackout. Open items are
+    deduplicated by (crew_member, indicator_key, for_date) so the same day
+    cannot generate multiple unresolved entries.
+    """
+
+    crew_member = models.ForeignKey(
+        CrewMember,
+        on_delete=models.CASCADE,
+        related_name="relay_items",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    for_date = models.DateField()
+    indicator_key = models.CharField(max_length=32)
+    severity = models.CharField(max_length=16)
+    headline = models.TextField()
+    reason = models.TextField(blank=True)
+    action_taken = models.TextField(blank=True)
+    contact_ground_open = models.BooleanField(default=False)
+    resolved = models.BooleanField(default=False)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-for_date", "indicator_key"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["crew_member", "indicator_key", "for_date"],
+                name="unique_open_relay_item_per_day",
+                condition=models.Q(resolved=False),
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.crew_member} {self.indicator_key} {self.for_date}: {self.severity}"
