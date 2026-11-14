@@ -348,6 +348,18 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - RULE spo2.drift ACTION sensor-recheck
   - RULE spo2.drift ACTION track-readings
 
+## Safety review (guidance wording)
+
+- `docs/GUIDANCE_REVIEW.md` records a per-rule review of `data/guidance.json`
+  (diagnosis-like wording, unsafe advice, unsupported claims, contact-ground
+  gaps), plus an independent second review by an AI reviewer agent.
+- Main open findings: all 48 actions are `TODO`-sourced; red rules lack
+  on-board emergency direction; mood.red has no crisis pathway; several
+  contributors name conditions; some sources are weak for their claims.
+- No wording was changed. The safety owner must accept, reject or rewrite each
+  finding. Sign-off is **pending**.
+- Guidance must not be shown to users as sourced guidance until sign-off.
+
 ## Needs human verification
 
 All `data/sources.json` entries have `verified: false`. Verify each source
@@ -370,6 +382,8 @@ and flip `verified` to `true` by hand after checking the page:
 
 ## Next
 
-1. Stage 7 (build plan): drift detection and forecasting (CUSUM + forecast band on the trend charts).
-2. Polish: friendlier engine reason wording and per-indicator units in reasons.
-3. Stage 8: Blackout mode and the relay summary.
+1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
+   (pending sign-off; findings by rule id, no wording changed yet).
+2. Stage 7 (build plan): drift detection and forecasting (CUSUM + forecast band on the trend charts).
+3. Polish: friendlier engine reason wording and per-indicator units in reasons.
+4. Stage 8: Blackout mode and the relay summary.
