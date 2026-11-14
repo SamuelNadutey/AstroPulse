@@ -267,6 +267,66 @@ def test_select_guidance_drift_at_orange_red_returns_severity_rule(severity):
 # Sources and citations ----------------------------------------------------
 
 
+def test_unsourced_actions_are_hidden(monkeypatch):
+    rule = _make_rule(
+        id="rule.visible",
+        indicator_key="resting_hr",
+        trigger={"severity": "orange"},
+        suggested_actions=[
+            {"id": "todo-act", "text": "Hidden step.", "source_ids": ["TODO"]},
+            {"id": "ok-act", "text": "Shown step.", "source_ids": ["src_arzeno_cv"]},
+        ],
+    )
+    monkeypatch.setattr("core.guidance.load_guidance", lambda: [rule])
+    result = select_guidance(_make_status("resting_hr", SEVERITY_ORANGE))
+    texts = [a["text"] for a in result.suggested_actions]
+    assert texts == ["Shown step."]
+
+
+def test_all_actions_hidden_when_none_sourced(monkeypatch):
+    rule = _make_rule(
+        id="rule.none",
+        indicator_key="resting_hr",
+        trigger={"severity": "orange"},
+        suggested_actions=[
+            {"id": "todo-act", "text": "Hidden step.", "source_ids": ["TODO"]},
+        ],
+    )
+    monkeypatch.setattr("core.guidance.load_guidance", lambda: [rule])
+    result = select_guidance(_make_status("resting_hr", SEVERITY_ORANGE))
+    assert result.suggested_actions == []
+
+
+CONDITION_LABELS = [
+    "infection",
+    "illness",
+    "burnout",
+    "breathing issue",
+    "breathing problem",
+    "deconditioning",
+    "dehydration",
+    "inflammation",
+    "reduced lung function",
+    "cardiovascular stress",
+    "injury",
+    "altitude",
+    "developing",
+    "health problem",
+    "sensor error",
+    "sensor calibration",
+    "equipment error",
+    "overheating",
+]
+
+
+def test_no_condition_labels_in_contributors_or_headlines():
+    for rule in load_guidance():
+        parts = [rule["headline"], *rule.get("likely_contributors", [])]
+        combined = " ".join(parts).lower()
+        for label in CONDITION_LABELS:
+            assert label not in combined, f"{rule['id']} contains '{label}'"
+
+
 def test_selected_guidance_has_resolved_sources():
     result = select_guidance(_make_status("resting_hr", SEVERITY_ORANGE))
     assert result.sources

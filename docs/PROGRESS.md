@@ -356,9 +356,15 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - Main open findings: all 48 actions are `TODO`-sourced; red rules lack
   on-board emergency direction; mood.red has no crisis pathway; several
   contributors name conditions; some sources are weak for their claims.
-- No wording was changed. The safety owner must accept, reject or rewrite each
-  finding. Sign-off is **pending**.
-- Guidance must not be shown to users as sourced guidance until sign-off.
+- Changes made after review (see GUIDANCE_REVIEW.md "Changes made after
+  review"): unsourced actions hidden from the card; condition labels replaced
+  with observable wording (test-enforced); spo2 urgency and wording aligned;
+  `127.0.0.1` allowed in settings.
+- Still blocked: red-rule emergency direction, mood.red crisis pathway,
+  sourcing the 48 actions, verifying the 14 sources, and the safety owner's
+  sign-off (**pending**).
+- Guidance wording must not be treated as approved until sign-off.
+- Test count: 124 passed, 1 xfailed.
 
 ## Needs human verification
 

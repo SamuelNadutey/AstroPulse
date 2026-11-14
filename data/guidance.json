@@ -4,10 +4,10 @@
     "indicator_key": "resting_hr",
     "trigger": {"severity": "yellow"},
     "headline": "Resting heart rate is a little above your usual range.",
-    "likely_contributors": ["Recent change in activity", "Caffeine or mild dehydration", "Stress from workload"],
+    "likely_contributors": ["Recent change in activity", "Recent caffeine or low fluid intake", "Stress from workload"],
     "suggested_actions": [
       {"id": "rest-quietly", "text": "Recheck after a few minutes of quiet rest.", "source_ids": ["TODO"]},
-      {"id": "note-stimulants", "text": "Note any recent exertion or stimulant use.", "source_ids": ["TODO"]}
+      {"id": "note-stimulants", "text": "Note any recent exertion or caffeine.", "source_ids": ["TODO"]}
     ],
     "remeasure_after": "2 hours",
     "contact_ground_text": "Contact ground if it stays higher than usual or you feel unwell.",
@@ -18,7 +18,7 @@
     "indicator_key": "resting_hr",
     "trigger": {"severity": "orange"},
     "headline": "Resting heart rate is elevated above your usual range.",
-    "likely_contributors": ["Prolonged workload or stress", "Reduced cardiovascular recovery", "Dehydration or illness starting"],
+    "likely_contributors": ["Prolonged workload or stress", "Slower recovery after activity", "Low fluid intake or a change in how you feel"],
     "suggested_actions": [
       {"id": "rest-rehydrate", "text": "Rest and rehydrate.", "source_ids": ["TODO"]},
       {"id": "recheck-calm", "text": "Recheck in a calm setting.", "source_ids": ["TODO"]}
@@ -32,7 +32,7 @@
     "indicator_key": "resting_hr",
     "trigger": {"severity": "red"},
     "headline": "Resting heart rate is very high.",
-    "likely_contributors": ["Significant cardiovascular stress", "Dehydration or illness", "Equipment or sensor issue"],
+    "likely_contributors": ["Strong physical or emotional strain", "Low fluid intake or a change in how you feel", "Sensor placement or sensor fault"],
     "suggested_actions": [
       {"id": "stop-activity", "text": "Stop strenuous activity and sit quietly.", "source_ids": ["TODO"]},
       {"id": "check-sensor", "text": "Check the sensor placement.", "source_ids": ["TODO"]}
@@ -46,7 +46,7 @@
     "indicator_key": "resting_hr",
     "trigger": {"drift": true},
     "headline": "Resting heart rate has been creeping up over time.",
-    "likely_contributors": ["Gradual deconditioning", "Increasing workload", "Ongoing stress"],
+    "likely_contributors": ["Less physical activity over time", "Increasing workload", "Ongoing stress"],
     "suggested_actions": [
       {"id": "recovery-time", "text": "Schedule protected recovery time.", "source_ids": ["TODO"]},
       {"id": "review-load", "text": "Review recent workload and sleep.", "source_ids": ["TODO"]}
@@ -74,20 +74,20 @@
     "indicator_key": "sleep_hours",
     "trigger": {"severity": "orange"},
     "headline": "Sleep duration is low enough to affect alertness.",
-    "likely_contributors": ["Circadian disruption", "Workload", "Environmental disturbances"],
+    "likely_contributors": ["Shifted sleep times", "Workload", "Environmental disturbances"],
     "suggested_actions": [
       {"id": "adjust-light", "text": "Ask about adjusting the light schedule.", "source_ids": ["TODO"]},
       {"id": "protect-sleep", "text": "Protect sleep time in the schedule.", "source_ids": ["TODO"]}
     ],
     "remeasure_after": "12 hours",
-    "contact_ground_text": "Contact ground soon to review sleep countermeasures.",
+    "contact_ground_text": "Contact ground soon to review ways to protect your sleep.",
     "source_ids": ["src_nasa_sleep_evidence", "src_nasa_sleep_prd"]
   },
   {
     "id": "sleep_hours.red",
     "indicator_key": "sleep_hours",
     "trigger": {"severity": "red"},
-    "headline": "Sleep is very short and may affect performance and health.",
+    "headline": "Sleep has been very short.",
     "likely_contributors": ["Severe sleep restriction", "Circadian disruption", "High workload"],
     "suggested_actions": [
       {"id": "seek-support", "text": "Ask for help prioritizing sleep.", "source_ids": ["TODO"]},
@@ -116,7 +116,7 @@
     "indicator_key": "temperature",
     "trigger": {"severity": "yellow"},
     "headline": "Body temperature is a little above your usual range.",
-    "likely_contributors": ["Recent activity", "Warm environment", "Minor infection"],
+    "likely_contributors": ["Recent activity", "Warm surroundings", "A change in how you feel"],
     "suggested_actions": [
       {"id": "rest-cool", "text": "Rest and rehydrate.", "source_ids": ["TODO"]},
       {"id": "recheck-cooled", "text": "Recheck after cooling down.", "source_ids": ["TODO"]}
@@ -130,7 +130,7 @@
     "indicator_key": "temperature",
     "trigger": {"severity": "orange"},
     "headline": "Body temperature is elevated above your usual range.",
-    "likely_contributors": ["Infection or inflammation", "Overheating", "Equipment error"],
+    "likely_contributors": ["A change in how you feel", "Warm surroundings or heavy exertion", "Sensor placement or sensor fault"],
     "suggested_actions": [
       {"id": "cooler-area", "text": "Move to a cooler area if possible.", "source_ids": ["TODO"]},
       {"id": "recheck-same-sensor", "text": "Recheck using the same sensor after rest.", "source_ids": ["TODO"]}
@@ -144,7 +144,7 @@
     "indicator_key": "temperature",
     "trigger": {"severity": "red"},
     "headline": "Body temperature is very high.",
-    "likely_contributors": ["Significant infection or heat stress", "Sensor error", "Dehydration"],
+    "likely_contributors": ["Heat strain or a change in how you feel", "Sensor placement or sensor fault", "Low fluid intake"],
     "suggested_actions": [
       {"id": "stop-exertion", "text": "Stop exertion and cool down if possible.", "source_ids": ["TODO"]},
       {"id": "verify-sensor", "text": "Verify the sensor is attached correctly.", "source_ids": ["TODO"]}
@@ -158,7 +158,7 @@
     "indicator_key": "temperature",
     "trigger": {"drift": true},
     "headline": "Body temperature has been drifting upward.",
-    "likely_contributors": ["Gradual overheating", "Developing illness", "Sensor calibration shift"],
+    "likely_contributors": ["Warmer surroundings or more exertion over time", "A change in how you feel", "Sensor placement or sensor fault"],
     "suggested_actions": [
       {"id": "check-sensor-env", "text": "Check the sensor and environment.", "source_ids": ["TODO"]},
       {"id": "consistent-recheck", "text": "Schedule a recheck at the same time each day.", "source_ids": ["TODO"]}
@@ -200,7 +200,7 @@
     "indicator_key": "mood",
     "trigger": {"severity": "red"},
     "headline": "Mood and stress score is very low.",
-    "likely_contributors": ["Severe isolation stress", "Burnout", "Sleep or health problem"],
+    "likely_contributors": ["Long-term isolation strain", "Ongoing heavy workload", "Poor sleep"],
     "suggested_actions": [
       {"id": "ask-support", "text": "Ask a crewmate to stay nearby.", "source_ids": ["TODO"]},
       {"id": "pause-demands", "text": "Pause non-essential demands if the schedule allows.", "source_ids": ["TODO"]}
@@ -242,7 +242,7 @@
     "indicator_key": "exercise_min",
     "trigger": {"severity": "orange"},
     "headline": "Exercise time is below target.",
-    "likely_contributors": ["Ongoing schedule issues", "Equipment problems", "Low energy or mood"],
+    "likely_contributors": ["Ongoing schedule issues", "Equipment problems", "Low energy"],
     "suggested_actions": [
       {"id": "prioritize-exercise", "text": "Prioritize the next scheduled exercise session.", "source_ids": ["TODO"]},
       {"id": "discuss-alternatives", "text": "Discuss alternative exercises with ground.", "source_ids": ["TODO"]}
@@ -256,7 +256,7 @@
     "indicator_key": "exercise_min",
     "trigger": {"severity": "red"},
     "headline": "Exercise time is far below target.",
-    "likely_contributors": ["Countermeasure breakdown", "Illness or injury", "Scheduling conflict"],
+    "likely_contributors": ["Exercise plan breakdown", "A change in how you feel or a physical limit", "Scheduling conflict"],
     "suggested_actions": [
       {"id": "revise-plan", "text": "Contact ground to revise the exercise plan.", "source_ids": ["TODO"]},
       {"id": "assess-barriers", "text": "Assess whether equipment or health is blocking exercise.", "source_ids": ["TODO"]}
@@ -284,13 +284,13 @@
     "indicator_key": "spo2",
     "trigger": {"severity": "yellow"},
     "headline": "Blood oxygen is a little below the usual range.",
-    "likely_contributors": ["Sensor placement", "Recent activity", "Mild breathing issue"],
+    "likely_contributors": ["Sensor placement", "Recent activity", "Breathing that feels different from usual"],
     "suggested_actions": [
       {"id": "check-placement", "text": "Check sensor placement and recheck.", "source_ids": ["TODO"]},
       {"id": "rest-recheck", "text": "Rest quietly and recheck.", "source_ids": ["TODO"]}
     ],
     "remeasure_after": "15 minutes",
-    "contact_ground_text": "Contact ground if the reading stays low or you feel short of breath.",
+    "contact_ground_text": "If you feel short of breath, treat it as urgent and contact ground now, or as soon as the link allows. Otherwise, contact ground if the reading stays low.",
     "source_ids": ["src_statpearls_pulseox"]
   },
   {
@@ -298,7 +298,7 @@
     "indicator_key": "spo2",
     "trigger": {"severity": "orange"},
     "headline": "Blood oxygen is below the usual range.",
-    "likely_contributors": ["Sensor error", "Breathing issue", "Reduced lung function"],
+    "likely_contributors": ["Sensor not sitting well", "Breathing that feels different from usual", "Cold fingers or poor sensor contact"],
     "suggested_actions": [
       {"id": "different-sensor", "text": "Recheck with a different sensor if available.", "source_ids": ["TODO"]},
       {"id": "breathe-slowly", "text": "Rest and breathe slowly.", "source_ids": ["TODO"]}
@@ -312,9 +312,9 @@
     "indicator_key": "spo2",
     "trigger": {"severity": "red"},
     "headline": "Blood oxygen is very low.",
-    "likely_contributors": ["Severe breathing problem", "Sensor error", "Altitude or pressure issue"],
+    "likely_contributors": ["Breathing that feels very different from usual", "Sensor not sitting well", "Cabin air or pressure change"],
     "suggested_actions": [
-      {"id": "alert-ground", "text": "Contact ground immediately if the link is available.", "source_ids": ["TODO"]},
+      {"id": "alert-ground", "text": "Contact ground now, or as soon as the link allows.", "source_ids": ["TODO"]},
       {"id": "recheck-sensor", "text": "Recheck with the sensor at rest.", "source_ids": ["TODO"]}
     ],
     "remeasure_after": "5 minutes",
@@ -326,7 +326,7 @@
     "indicator_key": "spo2",
     "trigger": {"drift": true},
     "headline": "Blood oxygen has been trending down.",
-    "likely_contributors": ["Sensor drift", "Developing breathing issue", "Environmental factor"],
+    "likely_contributors": ["Sensor placement changing", "Breathing that feels different over time", "Environmental factor"],
     "suggested_actions": [
       {"id": "sensor-recheck", "text": "Check the sensor and recheck at rest.", "source_ids": ["TODO"]},
       {"id": "track-readings", "text": "Track readings at the same time each day.", "source_ids": ["TODO"]}

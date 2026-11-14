@@ -27,16 +27,18 @@
     </div>
     {% endif %}
 
-    {% if guidance.suggested_actions %}
     <div class="gc-section gc-actions">
       <h4 class="gc-heading">What you can do</h4>
+      {% if guidance.suggested_actions %}
       <ul>
         {% for action in guidance.suggested_actions %}
         <li>{{ action.text }}</li>
         {% endfor %}
       </ul>
+      {% else %}
+      <p>Specific steps for this reading are still being reviewed. Contact ground if you are unsure what to do.</p>
+      {% endif %}
     </div>
-    {% endif %}
 
     {% if guidance.remeasure_after %}
     <div class="gc-section gc-remeasure">

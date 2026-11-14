@@ -86,6 +86,20 @@ def _resolve_sources(source_ids: list[str]) -> list[dict]:
     return resolved
 
 
+def _sourced_actions(actions: list[dict]) -> list[dict]:
+    """Keep only actions with at least one source id that resolves.
+
+    Actions still marked TODO (or citing unknown ids) are never shown to users
+    (AGENTS.md hard rule 4).
+    """
+    known = load_sources()
+    return [
+        action
+        for action in actions
+        if any(sid != "TODO" and sid in known for sid in action.get("source_ids", []))
+    ]
+
+
 def _to_result(rule: dict) -> GuidanceResult:
     """Build a :class:`GuidanceResult` from a rule dict."""
     return GuidanceResult(
@@ -94,7 +108,7 @@ def _to_result(rule: dict) -> GuidanceResult:
         trigger=rule["trigger"],
         headline=rule["headline"],
         likely_contributors=rule.get("likely_contributors", []),
-        suggested_actions=rule.get("suggested_actions", []),
+        suggested_actions=_sourced_actions(rule.get("suggested_actions", [])),
         remeasure_after=rule.get("remeasure_after", ""),
         contact_ground_text=rule.get("contact_ground_text", ""),
         source_ids=rule.get("source_ids", []),

@@ -17,7 +17,7 @@ SECRET_KEY = "django-insecure-local-dev-placeholder-key-not-for-production"
 DEBUG = True
 
 # Local development only: never serve this publicly.
-ALLOWED_HOSTS = ["localhost"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",

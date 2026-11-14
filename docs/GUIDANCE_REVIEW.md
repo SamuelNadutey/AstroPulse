@@ -215,6 +215,37 @@ issue.
 - No banned diagnosis phrase ("you have", "you are suffering", "diagnosis of",
   "you are sick") appears in the file.
 
+## Changes made after review
+
+Done (non-clinical changes; the owner should still confirm them):
+- Unsourced actions are hidden from users. `core/guidance.py` shows only
+  actions with a resolved source. The card shows "Specific steps for this
+  reading are still being reviewed. Contact ground if you are unsure what to
+  do." when none are sourced. All 48 actions are currently hidden.
+- Condition labels replaced with observable wording in contributors and
+  headlines (for example "Minor infection" to "A change in how you feel",
+  "Sensor error" to "Sensor placement or sensor fault", "Breathing issue" to
+  "Breathing that feels different from usual", "Developing illness" removed).
+  A test blocks these labels from returning.
+- `spo2.yellow` contact text now treats shortness of breath as urgent.
+  Owner to confirm this wording.
+- `spo2.red` action aligned with the contact text ("Contact ground now, or as
+  soon as the link allows").
+- `sleep_hours.red` headline no longer implies a health outcome.
+- `config/settings.py`: `127.0.0.1` added to `ALLOWED_HOSTS`.
+
+Not done, and blocked on the safety owner or sources:
+- Emergency direction for red rules (chest pain, fainting, confusion,
+  breathlessness, heat illness). Needs a sourced reference or the crew's
+  emergency procedure document. Not written by the agent.
+- Crisis or safety pathway for `mood.red`. Same reason.
+- Rewriting or sourcing the 48 actions. Needs sources; see PROGRESS.md.
+- Verifying the 14 sources. Needs a human check of each page.
+- Clinical sign-off of all wording.
+- One reviewer note was partly inaccurate. The second reviewer said
+  `spo2.red` puts the sensor recheck first. In the file, "alert-ground" is
+  already first. The remaining issue is the wording conflict, now fixed.
+
 ## Recommended next steps (for the safety owner)
 
 1. Decide the emergency-direction wording for red rules and find a sourced

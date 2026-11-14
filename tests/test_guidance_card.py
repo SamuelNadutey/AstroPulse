@@ -91,6 +91,20 @@ class TestGuidanceCardRegionPanel:
         assert "source-url" in content
 
 
+class TestGuidanceCardActions:
+    def test_card_shows_fallback_when_no_sourced_actions(self):
+        call_command("seed_demo", scenario="drift_day6", reset=True)
+        day14 = _today() - timedelta(days=7)
+        client = _client()
+        response = client.get(f"/trend/resting_hr/?date={day14.isoformat()}")
+        content = response.content.decode()
+        # All current actions are TODO-sourced, so none may be rendered.
+        assert "gc-actions" in content
+        assert "Specific steps for this reading are still being reviewed" in content
+        assert "Rest and rehydrate." not in content
+        assert "Recheck in a calm setting." not in content
+
+
 class TestGuidanceCardTrendPage:
     def test_trend_page_orange_shows_all_sections(self):
         call_command("seed_demo", scenario="drift_day6", reset=True)
