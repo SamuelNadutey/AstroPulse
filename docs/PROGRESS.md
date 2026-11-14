@@ -10,7 +10,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - [x] Stage 1: Data layer, indicator config and the simulator
 - [x] Stage 2: The status engine (baseline and severity)
 - [x] Stage 3: Check-in flow and environment profiles
-- [ ] Stage 4: The body map and status dashboard
+- [x] Stage 4: The body map and status dashboard
 - [ ] Stage 5: Trend charts
 - [ ] Stage 6: Sources and cited guidance
 - [ ] Stage 7: Drift detection and forecasting
@@ -83,16 +83,55 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
     severity (gray/green/yellow/orange/red) as icon+text+color on the page,
     the SIMULATED badge and drift_day6 vs calm_week severity.
 - Full suite: 61 tests passing (`pytest` in a project venv).
+- Stage 4 complete (body map and status dashboard, built with the optional
+  `?date=` demo review agreed at plan time):
+  - `core/templates/core/_bodymap.html`: inline SVG front-view body map.
+    Five focusable region groups (head, chest, lungs, torso, legs) with
+    `role="button"`, `tabindex="0"`, an aria-label carrying region name +
+    severity word + color name, and `hx-get` into `#region-panel` with
+    `hx-trigger="click, keyup[key==='Enter']"` for keyboard users (bundled
+    HTMX trigger syntax only). Each region shows a severity icon + text
+    label next to it; shape colors come from the sev-* CSS variables.
+  - Color-blind-safe (Okabe-Ito derived) placeholder palette as CSS
+    variables (fill + darker text tone per severity) in `app.css`, plus a
+    legend with icon + word + color name for all five severities.
+  - `core/services.py`: `run_status_for` entries now carry `body_region`;
+    new `REGION_LABELS`, `worst_severity()` (severity rank from the
+    engine's public constants) and `region_statuses(entries)` which groups
+    by region with the WORST severity winning for shared regions (head =
+    sleep_hours + mood).
+  - `/region/<name>/` (`region_detail`): HTMX partial showing each of the
+    region's indicators — value today, severity icon + text + color,
+    reasons — plus a per-indicator "View trend" link. Unknown regions 404.
+  - `/trend/<indicator_key>/`: tiny placeholder page ("Trend charts arrive
+    in the next build stage") so the trend links are not dead (Stage 5).
+  - `/status/` is now the dashboard: overall banner ("All indicators
+    normal" or worst severity with icon + word), CSS-grid layout with body
+    map + detail panel (collapses to one column under 48rem), the Stage 3
+    per-indicator list kept as a no-JS fallback, per-row SIMULATED badges.
+  - `?date=YYYY-MM-DD` on `/status/` and `/region/<name>/` reviews a past
+    day (invalid/future dates fall back to today). Added so the seeded
+    drift_day6 demo can be walked day by day.
+  - `tests/test_bodymap.py`: 9 tests — region mapping matches the spec,
+    worst-severity aggregation, focusable regions with aria-labels, the
+    no-color-only rule (icon + text for every severity), region endpoint
+    indicator selection, 404s, the drift_day6 escalation story and date
+    fallback. Full suite: 70 tests passing.
 
 ## Acceptance check
 
-- `seed_demo --scenario drift_day6`, then `/status/` (verified against a live
-  dev server): the day-21 view shows resting_hr green at 82.93 bpm (the
-  adaptive 14-day baseline has absorbed the drift), Sleep red at 3.59 hours
-  (below the red limit), other indicators green, per-row SIMULATED badges.
-  Severity is therefore not monotonically rising over the demo; the drift
-  story is carried by the limit breach and the elevated absolute value (the
-  Stage 7 CUSUM is the planned mechanism for slow drift).
+- `seed_demo --scenario drift_day6`, verified live:
+  - Day 21 (default): head region red (sleep 3.59 h, "Below the critical
+    limit of 4"), chest green (resting_hr 82.93 bpm; the adaptive baseline
+    absorbed the drift), others green.
+  - Day 14 (`/status/?date=<today-7>`): chest AND head orange
+    ("Resting heart rate is 3.49 spreads above your usual range"), so the
+    escalation is demonstrable mid-scenario via the date parameter.
+  - Day 6: chest red (the drift spike).
+  - Region panels show reasons and per-indicator trend links; SIMULATED
+    badges appear on the banner and simulated rows.
+  - Severity is still not monotonically rising over time (Stage 2 known
+    issue); the Stage 7 CUSUM remains the planned fix for slow drift.
 
 ## Decisions
 
@@ -111,6 +150,16 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - Real check-ins are stored under a single local crew member, "You (local)",
   until the dashboard/auth stage introduces profiles. `/status/` shows the
   crew member with the most recent CheckIn (fallback: first crew member).
+- The dashboard supports an optional `?date=YYYY-MM-DD` (default today,
+  future dates clamped) so the seeded demo scenarios can be reviewed day
+  by day; real use stays on today's date.
+- The trend link on region panels points at a minimal `/trend/<key>/`
+  placeholder until Stage 5 delivers the charts.
+- Body-map region-to-indicator mapping is derived from
+  `data/indicators.json` (`body_region`), not hardcoded; `REGION_LABELS`
+  provides the five display names.
+- Region colors use an Okabe-Ito derived placeholder palette (CSS
+  variables); severity is always icon + text + color.
 - Engine treats only the most recent window of readings; a bare string/bytes or
   non-sequence history is rejected (not iterated) and a zero/non-finite MAD floor
   must not divide by zero or report a fake green.
@@ -145,6 +194,11 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   "Select a valid choice" text alongside the friendly invalid message.
 - Severity reason wording from the engine ("is 6.0 spreads above your usual
   range") is functional but stiff; rewording is a later polish task.
+- The body map is stylised placeholder art (simple circles/rects); a
+  designer-quality silhouette is a demo-preparation polish item.
+- SVG focus outlines vary by browser; `:focus` outline is styled but
+  keyboard behaviour should be re-verified in the Stage 10 accessibility
+  audit.
 
 ## Needs a source
 
@@ -157,6 +211,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 
 ## Next
 
-1. Stage 4 (build plan): the body map and status dashboard.
+1. Stage 5 (build plan): trend charts (Plotly, bundled; replace the
+   /trend/ placeholder pages).
 2. Stage 6: replace placeholder limits with sourced values (see above).
 3. Polish: friendlier engine reason wording and per-indicator units in reasons.

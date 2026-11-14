@@ -1,0 +1,36 @@
+{# Region detail panel, loaded by HTMX into #region-panel. Shows each
+   indicator mapped to the region: value today, severity icon + text +
+   color and the engine's reasons, plus a per-indicator trend link
+   (trend charts arrive in Stage 5). #}
+<div class="region-detail sev-{{ region.severity }}">
+  <div class="region-detail-head">
+    <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=region.display.shape only %}</span>
+    <h3 class="region-title">{{ region.label }} — {{ region.display.word }} ({{ region.severity }})</h3>
+    {% if region.is_simulated %}<span class="badge-simulated">SIMULATED</span>{% endif %}
+  </div>
+  {% if region.entries %}
+  <div class="region-indicators">
+    {% for entry in region.entries %}
+    <div class="region-indicator sev-{{ entry.result.severity }}">
+      <div class="region-indicator-head">
+        <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=entry.display.shape only %}</span>
+        <span class="sev-word">{{ entry.display.word }}</span>
+        <span class="sev-name">({{ entry.result.severity }})</span>
+        <strong class="region-indicator-label">{{ entry.label }}</strong>
+        {% if entry.value is not None %}
+        <span class="status-value">{{ entry.value }} {{ entry.unit }}</span>
+        {% endif %}
+      </div>
+      {% if entry.result.reasons %}
+      <ul class="reasons">
+        {% for reason in entry.result.reasons %}<li>{{ reason }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      <a class="trend-link" href="{% url 'core:trend' entry.key %}?date={{ date|date:'Y-m-d' }}">View trend</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>No readings for this region on {{ date }}.</p>
+  {% endif %}
+</div>

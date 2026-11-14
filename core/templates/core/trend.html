@@ -1,0 +1,9 @@
+{% extends "core/base.html" %}
+{% block title %}Trend — {{ indicator.label }}{% endblock %}
+{% block content %}
+<h2>{{ indicator.label }} trend</h2>
+<p class="placeholder-note">
+  Trend charts arrive in the next build stage. Today's value for
+  {{ indicator.label }} is shown on the <a href="{% url 'core:status' %}">status dashboard</a>.
+</p>
+{% endblock %}

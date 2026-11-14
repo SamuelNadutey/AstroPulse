@@ -123,13 +123,23 @@ body {
   padding: 0.75rem 1rem;
 }
 
-/* Severity colors: always paired with an icon and a text word above,
-   never color alone (AGENTS.md hard rule 5). */
-.sev-gray { border-left-color: #a0aec0; color: #4a5568; }
-.sev-green { border-left-color: #38a169; color: #276749; }
-.sev-yellow { border-left-color: #d69e2e; color: #975a16; }
-.sev-orange { border-left-color: #dd6b20; color: #9c4221; }
-.sev-red { border-left-color: #c53030; color: #822727; }
+/* Severity palette: Okabe-Ito derived, color-blind-safe placeholder
+   tones (fill for shapes/icons, darker text tone). Severity is always
+   paired with an icon and a text word, never color alone (AGENTS.md
+   hard rule 5). All values are placeholders, not clinical colors. */
+:root {
+  --sev-gray-fill: #999999;   --sev-gray-text: #595959;
+  --sev-green-fill: #009E73;  --sev-green-text: #00694F;
+  --sev-yellow-fill: #E6B800; --sev-yellow-text: #8A6D00;
+  --sev-orange-fill: #E69F00; --sev-orange-text: #9C5700;
+  --sev-red-fill: #D55E00;    --sev-red-text: #A83200;
+}
+
+.sev-gray { border-left-color: var(--sev-gray-fill); color: var(--sev-gray-text); --region-color: var(--sev-gray-fill); }
+.sev-green { border-left-color: var(--sev-green-fill); color: var(--sev-green-text); --region-color: var(--sev-green-fill); }
+.sev-yellow { border-left-color: var(--sev-yellow-fill); color: var(--sev-yellow-text); --region-color: var(--sev-yellow-fill); }
+.sev-orange { border-left-color: var(--sev-orange-fill); color: var(--sev-orange-text); --region-color: var(--sev-orange-fill); }
+.sev-red { border-left-color: var(--sev-red-fill); color: var(--sev-red-text); --region-color: var(--sev-red-fill); }
 
 .status-row-head {
   display: flex;
@@ -161,4 +171,113 @@ body {
   margin: 0.25rem 0 0;
   padding-left: 1.25rem;
   font-size: 0.875rem;
+}
+
+/* Status dashboard: body map + detail panel (CSS grid, mobile-friendly). */
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 48rem) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-map,
+.dashboard-panel {
+  border: 1px solid #cbd5e0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.dashboard-panel {
+  min-height: 14rem;
+}
+
+.bodymap {
+  width: 100%;
+  height: auto;
+  max-width: 32rem;
+  display: block;
+}
+
+.bm-region {
+  cursor: pointer;
+}
+
+.bm-region .bm-shape {
+  fill: var(--region-color, #a0aec0);
+  stroke: #1a202c;
+  stroke-width: 1;
+}
+
+.bm-region:focus {
+  outline: 3px solid #2b6cb0;
+}
+
+.bm-label-text {
+  fill: currentColor;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bm-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.overall-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  border: 1px solid #cbd5e0;
+  border-left-width: 6px;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.region-detail-head,
+.region-indicator-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.region-detail-head .region-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.region-indicator {
+  border: 1px solid #cbd5e0;
+  border-left-width: 5px;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.region-indicator-label {
+  font-size: 0.95rem;
+}
+
+.trend-link {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #2b6cb0;
 }

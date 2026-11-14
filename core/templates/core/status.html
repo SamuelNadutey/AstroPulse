@@ -1,13 +1,40 @@
 {% extends "core/base.html" %}
 {% block title %}Status{% endblock %}
 {% block content %}
-<h2>Status</h2>
+<h2>Status{% if date %} — {{ date }}{% endif %}</h2>
 {% if crew is None %}
 <p>No data yet. Complete a <a href="{% url 'core:checkin' %}">daily check-in</a> first.</p>
 {% else %}
-<p class="placeholder-note">
-  For {{ crew }}. Personal thresholds are placeholders, not clinical values.
-</p>
+<p class="placeholder-note">For {{ crew }}. Personal thresholds are placeholders, not clinical values.</p>
+{# Overall banner: worst severity with icon + text + color. #}
+<div class="overall-banner sev-{{ overall.severity }}" role="status">
+  <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=overall.shape only %}</span>
+  <strong class="overall-word">{{ overall.word }}</strong>
+  <span class="sev-name">({{ overall.severity }})</span>
+  {% if overall.is_simulated %}<span class="badge-simulated">SIMULATED</span>{% endif %}
+</div>
+
+<div class="dashboard">
+  <section class="dashboard-map" aria-label="Body map">
+    {% include "core/_bodymap.html" %}
+    <ul class="bm-legend" aria-label="Severity legend">
+      {% for item in legend %}
+      <li class="sev-{{ item.severity }}">
+        <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=item.shape only %}</span>
+        {{ item.word }} ({{ item.severity }})
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="dashboard-panel" aria-label="Region detail">
+    <div id="region-panel">
+      <p class="placeholder-note">Select a body region on the map to see its indicators.</p>
+    </div>
+  </section>
+</div>
+
+{# No-JS fallback: the full per-indicator list (Stage 3 output). #}
+<h3>All indicators</h3>
 <div class="status-list">
   {% for entry in entries %}
   <section class="status-row sev-{{ entry.result.severity }}">
@@ -15,7 +42,7 @@
       <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=entry.display.shape only %}</span>
       <span class="sev-word">{{ entry.display.word }}</span>
       <span class="sev-name">({{ entry.result.severity }})</span>
-      <h3 class="status-label">{{ entry.label }}</h3>
+      <h4 class="status-label">{{ entry.label }}</h4>
       {% if entry.value is not None %}
       <span class="status-value">{{ entry.value }} {{ entry.unit }}</span>
       {% endif %}
