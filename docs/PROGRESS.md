@@ -199,6 +199,11 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - SVG focus outlines vary by browser; `:focus` outline is styled but
   keyboard behaviour should be re-verified in the Stage 10 accessibility
   audit.
+- Stage 4 UI fixes committed after review (commit `41b66ee`):
+  Django template comments `{# #}` no longer leak into rendered HTML;
+  mood shows "4.34 / 5" (scale separate from value); region labels are
+  14px for legibility; SIMULATED badge moved to sit beside each
+  indicator name.
 
 ## Needs a source
 
