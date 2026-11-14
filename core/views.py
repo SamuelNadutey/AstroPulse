@@ -7,16 +7,19 @@ environment switcher. Every page inherits the footer:
 No engine math lives here: status results come from core.services
 (run_status_for), which calls the pure engine.
 """
+from datetime import timedelta
+from types import SimpleNamespace
+
 from django.http import Http404
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from datetime import timedelta
 
 from core.forms import CheckInForm
 from core.models import CheckIn, CrewMember, Reading
 from core.charts import build_trend_figure, trend_summary
+from core.guidance import select_guidance
 from core.services import (
     REGION_LABELS,
     SEVERITY_GREEN,
@@ -111,6 +114,26 @@ def _legend():
             SEVERITY_RED,
         )
     ]
+
+
+def _status_entry_for(crew_member, indicator_key, date):
+    """Return the status entry for one indicator on a given date, or None."""
+    for entry in run_status_for(crew_member, date):
+        if entry["key"] == indicator_key:
+            return entry
+    return None
+
+
+def _guidance_for(status_result, indicator_key):
+    """Wrap a status result so select_guidance can pick a rule by indicator key."""
+    if status_result is None:
+        return None
+    wrapper = SimpleNamespace(
+        severity=status_result.severity,
+        indicator_key=indicator_key,
+        drift=False,
+    )
+    return select_guidance(wrapper)
 
 
 def home(request):
@@ -220,6 +243,7 @@ def region_detail(request, region: str):
         region_info["label"] = REGION_LABELS[region]
         for entry in region_info["entries"]:
             entry["display"] = SEVERITY_DISPLAY[entry["result"].severity]
+            entry["guidance"] = _guidance_for(entry["result"], entry["key"])
         region_info["is_simulated"] = any(
             e["is_simulated"] for e in region_info["entries"]
         )
@@ -274,6 +298,18 @@ def trend(request, indicator_key: str):
                     recorded_at__lte=date,
                 )
             )
+        entry = _status_entry_for(crew, indicator_key, date)
+        if entry is not None:
+            context["status_result"] = entry["result"]
+            context["status_display"] = SEVERITY_DISPLAY[entry["result"].severity]
+            context["guidance"] = _guidance_for(entry["result"], indicator_key)
+        else:
+            context["status_result"] = SimpleNamespace(
+                severity=SEVERITY_GRAY,
+                reasons=["Not enough data yet for this indicator."],
+            )
+            context["status_display"] = SEVERITY_DISPLAY[SEVERITY_GRAY]
+            context["guidance"] = None
     if request.headers.get("HX-Request"):
         return render(request, "core/_trend_chart.html", context)
     return render(request, "core/trend.html", context)

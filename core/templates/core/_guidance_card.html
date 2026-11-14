@@ -1,0 +1,85 @@
+<article class="guidance-card sev-{{ result.severity }}">
+  <div class="gc-section gc-status">
+    <h4 class="gc-heading">Status and reason</h4>
+    <div class="gc-status-line">
+      <span class="sev-icon" aria-hidden="true">
+        {% include "core/_severity_icon.html" with shape=display.shape only %}
+      </span>
+      <span class="sev-word">{{ display.word }}</span>
+      <span class="sev-name">({{ result.severity }})</span>
+    </div>
+    {% if result.reasons %}
+    <ul class="gc-reasons">
+      {% for reason in result.reasons %}<li>{{ reason }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  {% if guidance %}
+    {% if guidance.likely_contributors %}
+    <div class="gc-section gc-contributors">
+      <h4 class="gc-heading">Likely contributors</h4>
+      <ul>
+        {% for contributor in guidance.likely_contributors %}
+        <li>{{ contributor }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if guidance.suggested_actions %}
+    <div class="gc-section gc-actions">
+      <h4 class="gc-heading">What you can do</h4>
+      <ul>
+        {% for action in guidance.suggested_actions %}
+        <li>{{ action.text }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if guidance.remeasure_after %}
+    <div class="gc-section gc-remeasure">
+      <h4 class="gc-heading">Measure again in</h4>
+      <p>{{ guidance.remeasure_after }}</p>
+    </div>
+    {% endif %}
+
+    {% if guidance.contact_ground_text %}
+    <div class="gc-section gc-contact">
+      <h4 class="gc-heading">
+        <span class="sev-icon" aria-hidden="true">
+          {% include "core/_severity_icon.html" with shape="octagon" only %}
+        </span>
+        <strong>When to contact ground</strong>
+      </h4>
+      <p>{{ guidance.contact_ground_text }}</p>
+    </div>
+    {% endif %}
+
+    {% if guidance.sources %}
+    <div class="gc-section gc-sources">
+      <h4 class="gc-heading">Sources</h4>
+      <ol>
+        {% for source in guidance.sources %}
+        <li>
+          <span class="source-citation">{{ source.display_citation }}</span>
+          <span class="source-url">{{ source.url }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+  {% else %}
+    {% if result.severity == "green" %}
+    <div class="gc-section gc-reassurance">
+      <p>This indicator looks normal for you. Keep up your current routine and keep tracking it.</p>
+    </div>
+    {% elif result.severity == "gray" %}
+    <div class="gc-section gc-insufficient">
+      <h4 class="gc-heading">Not enough data yet</h4>
+      <p>Add at least five readings over the next two weeks to build your personal baseline.</p>
+    </div>
+    {% endif %}
+  {% endif %}
+</article>

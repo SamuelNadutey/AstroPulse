@@ -178,8 +178,6 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   `/status/` SIMULATED badge is driven by the day's Reading.is_simulated.
 - `Reading.indicator_key` is not validated at the model level; the check-in
   form only submits keys from indicators.json (validation stays form-side).
-- `guidance.json` is still an empty placeholder; `environments.json` is now
-  filled but all of its prompt/comms copy is placeholder demo text.
 - All thresholds, ranges, MAD floors and scenario magnitudes are placeholders,
   not clinical values (see docs/INDICATORS.md and "Needs a source").
 - The personal-baseline engine has no dates. Duplicate calendar days are not
@@ -265,6 +263,23 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - `tests/test_engine.py`: updated the outdated sources placeholder
     test to match the new real sources file.
   - Full suite: 110 passed, 1 xfailed.
+- Guidance card UI (follows Stage 6 sourced guidance):
+  - `core/templates/core/_guidance_card.html`: reusable card with sections
+    in order — Status and reason, Likely contributors, What you can do,
+    Measure again in, When to contact ground, Sources. Citations render as
+    plain text only; URLs are never clickable links or loaded resources.
+  - Card included per indicator in the region detail panel
+    (`core/templates/core/_region_detail.html`) and under each trend chart
+    (`core/templates/core/_trend_chart.html`).
+  - `core/views.py`: `_status_entry_for()` and `_guidance_for()` helpers
+    feed the card. Green shows a short reassuring card with no contact-ground
+    alarm; gray shows "Not enough data yet" plus the fix-it prompt.
+  - `core/static/core/app.css`: guidance-card styles, severity-colored left
+    border, distinct contact-ground block, accessible section headings.
+  - `tests/test_guidance_card.py`: 10 tests covering all six sections at
+    orange, contact-ground prominence at red, gray message, green
+    reassurance, plain-text sources, and accessible headings.
+  - Full suite: 120 passed, 1 xfailed.
 
 ## Acceptance check
 
