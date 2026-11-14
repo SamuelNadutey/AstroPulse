@@ -12,7 +12,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - [x] Stage 3: Check-in flow and environment profiles
 - [x] Stage 4: The body map and status dashboard
 - [x] Stage 5: Trend charts
-- [ ] Stage 6: Sources and cited guidance
+- [x] Stage 6: Sources and cited guidance
 - [ ] Stage 7: Drift detection and forecasting
 - [ ] Stage 8: Blackout mode and the relay summary
 - [ ] Stage 9: Actions and the progress view
@@ -232,6 +232,39 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
     text, 404 for unknown indicators, and drift_day6 resting HR drift is
     visible.
   - Full suite: 79 tests passing.
+- Stage 6 complete (sourced guidance and citation validation):
+  - `data/sources.json`: 14 provided sources, all with `verified: false`
+    and a `verify_note`. Optional `doi` and `alt_url` preserved. Years
+    are `null` where noted; the UI displays those as "n.d.".
+  - `data/guidance.json`: 24 rules (yellow/orange/red/drift for each of
+    the six indicators). Every rule cites only sources from the allowed
+    per-indicator table; `src_nasa_std_3001_v1` is used only on red
+    rules as a secondary source. Actions use `TODO` source ids when no
+    provided source clearly covers the action.
+  - `core/guidance.py`: cached loaders, `GuidanceResult`, and
+    `select_guidance(status_result)` that returns the drift rule for
+    yellow+drift, the severity rule for orange/red, and `None` for
+    green/gray. Resolved sources include `display_citation` and `url`
+    (plain text only, never a link or loaded resource).
+  - `core/validation.py`: `collect_errors()`, `list_needs_source()`,
+    `validate_guidance_data()`, and `GuidanceValidationError`. Checks
+    missing/unknown/TODO source ids for rules and actions, missing
+    `contact_ground_text`, duplicate ids, unknown indicator keys,
+    invalid triggers, and missing headlines. `strict=True` reports
+    unverified sources.
+  - `core/management/commands/check_guidance.py`:
+    `python manage.py check_guidance [--strict]`. Prints `OK` and the
+    TODO list in normal mode; fails in strict mode until all sources are
+    verified.
+  - `tests/test_guidance.py`: 32 tests including synthetic validation
+    errors, rule coverage, `select_guidance` behavior, resolved sources,
+    allowed-source compliance, red/orange contact wording, digit checks
+    (allowed only in spo2), banned diagnosis phrases, and the management
+    command. `test_no_todo_sources` is marked `xfail` until real action
+    sources are found.
+  - `tests/test_engine.py`: updated the outdated sources placeholder
+    test to match the new real sources file.
+  - Full suite: 110 passed, 1 xfailed.
 
 ## Acceptance check
 
@@ -245,16 +278,83 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 
 ## Needs a source
 
-- Replace placeholder limits with sourced values (resolved in Stage 6).
-  `data/limits.json` thresholds, valid ranges and MAD floors are placeholders.
-  `data/sources.json` holds `verified: false` stubs titled
-  "PLACEHOLDER: replace with a real cited source"; no real citation, URL or
-  publisher is invented. Limit reasons currently say "(see source)" and must be
-  wired to real source ids once cited values exist.
+- Placeholder limits in `data/limits.json` are still unsourced except where
+  noted. Thresholds, valid ranges and MAD floors remain placeholders, not
+  clinical values.
+- The following suggested actions currently use `TODO` source ids because no
+  provided source clearly covers the action. They must be resolved before the
+  Stage 10 audit:
+  - RULE resting_hr.yellow ACTION rest-quietly
+  - RULE resting_hr.yellow ACTION note-stimulants
+  - RULE resting_hr.orange ACTION rest-rehydrate
+  - RULE resting_hr.orange ACTION recheck-calm
+  - RULE resting_hr.red ACTION stop-activity
+  - RULE resting_hr.red ACTION check-sensor
+  - RULE resting_hr.drift ACTION recovery-time
+  - RULE resting_hr.drift ACTION review-load
+  - RULE sleep_hours.yellow ACTION wind-down
+  - RULE sleep_hours.yellow ACTION dark-quiet
+  - RULE sleep_hours.orange ACTION adjust-light
+  - RULE sleep_hours.orange ACTION protect-sleep
+  - RULE sleep_hours.red ACTION seek-support
+  - RULE sleep_hours.red ACTION minimize-stimuli
+  - RULE sleep_hours.drift ACTION review-sleep-schedule
+  - RULE sleep_hours.drift ACTION track-triggers
+  - RULE temperature.yellow ACTION rest-cool
+  - RULE temperature.yellow ACTION recheck-cooled
+  - RULE temperature.orange ACTION cooler-area
+  - RULE temperature.orange ACTION recheck-same-sensor
+  - RULE temperature.red ACTION stop-exertion
+  - RULE temperature.red ACTION verify-sensor
+  - RULE temperature.drift ACTION check-sensor-env
+  - RULE temperature.drift ACTION consistent-recheck
+  - RULE mood.yellow ACTION short-break
+  - RULE mood.yellow ACTION note-stressors
+  - RULE mood.orange ACTION scheduled-countermeasure
+  - RULE mood.orange ACTION reach-crewmate
+  - RULE mood.red ACTION ask-support
+  - RULE mood.red ACTION pause-demands
+  - RULE mood.drift ACTION social-activity
+  - RULE mood.drift ACTION review-workload-sleep
+  - RULE exercise_min.yellow ACTION short-movement
+  - RULE exercise_min.yellow ACTION check-equipment
+  - RULE exercise_min.orange ACTION prioritize-exercise
+  - RULE exercise_min.orange ACTION discuss-alternatives
+  - RULE exercise_min.red ACTION revise-plan
+  - RULE exercise_min.red ACTION assess-barriers
+  - RULE exercise_min.drift ACTION crew-session
+  - RULE exercise_min.drift ACTION review-barriers
+  - RULE spo2.yellow ACTION check-placement
+  - RULE spo2.yellow ACTION rest-recheck
+  - RULE spo2.orange ACTION different-sensor
+  - RULE spo2.orange ACTION breathe-slowly
+  - RULE spo2.red ACTION alert-ground
+  - RULE spo2.red ACTION recheck-sensor
+  - RULE spo2.drift ACTION sensor-recheck
+  - RULE spo2.drift ACTION track-readings
+
+## Needs human verification
+
+All `data/sources.json` entries have `verified: false`. Verify each source
+and flip `verified` to `true` by hand after checking the page:
+
+- `src_nasa_sleep_evidence`: NTRS ID 20150016964. Year not shown in the search result; check the page.
+- `src_nasa_sleep_prd`: NTRS ID 20160003864. Year not shown; check the page.
+- `src_hera_2020`: Front. Physiol. 11:394. The author list in the search result was garbled (appears to be Nasrini et al.); check authors.
+- `src_nasa_behav_evidence`: NTRS ID 20160004365. Year not shown; check the page.
+- `src_nasa_behav_evidence_update`: Year 2025 inferred from file name and NTRS ID; verify.
+- `src_nasa_behav_risk_page`: Page showed 'Last Updated Sep 17, 2025'. Confirm exact page title.
+- `src_nasa_exercise_iws`: NTRS ID 20230013277. 2023 is the NTRS 'date acquired'; confirm title, authors and year.
+- `src_roberts_2025`: Journal name inferred from the DOI prefix; verify. First author appears to be Roberts.
+- `src_loerch_exercise`: Author appears to be L. H. Loerch. Journal name and year not confirmed; URL built from the DOI.
+- `src_arzeno_cv`: Arzeno et al., NTRS ID 20100036638. Year not shown; check.
+- `src_otsuka_hrv`: Otsuka et al., Heliyon Dec 2016. Weak support for resting heart rate; flag for human review.
+- `src_stahn_temp_2017`: Stahn et al., Sci Rep 7:16180.
+- `src_statpearls_pulseox`: This URL is a StatPearls mirror. Replace with the canonical NCBI Bookshelf URL; authors and year not shown.
+- `src_nasa_std_3001_v1`: Revision C date taken from the document history (Sept 15, 2023); verify.
 
 ## Next
 
-1. Stage 6 (build plan): replace placeholder limits with sourced values.
-2. Stage 7: drift detection and forecasting (CUSUM + forecast band on the
-   trend charts).
-3. Polish: friendlier engine reason wording and per-indicator units in reasons.
+1. Stage 7 (build plan): drift detection and forecasting (CUSUM + forecast band on the trend charts).
+2. Polish: friendlier engine reason wording and per-indicator units in reasons.
+3. Stage 8: Blackout mode and the relay summary.

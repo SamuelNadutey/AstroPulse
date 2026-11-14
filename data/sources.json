@@ -1,8 +1,147 @@
 [
-  {"id": "placeholder-resting_hr", "indicator": "resting_hr", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
-  {"id": "placeholder-sleep_hours", "indicator": "sleep_hours", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
-  {"id": "placeholder-temperature", "indicator": "temperature", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
-  {"id": "placeholder-mood", "indicator": "mood", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
-  {"id": "placeholder-exercise_min", "indicator": "exercise_min", "title": "PLACEHOLDER: replace with a real cited source", "verified": false},
-  {"id": "placeholder-spo2", "indicator": "spo2", "title": "PLACEHOLDER: replace with a real cited source", "verified": false}
+  {
+    "id": "src_nasa_sleep_evidence",
+    "title": "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload",
+    "publisher": "NASA Human Research Program",
+    "year": null,
+    "url": "https://ntrs.nasa.gov/api/citations/20150016964/downloads/20150016964.pdf",
+    "supports": "Astronauts average less sleep in spaceflight than on the ground.",
+    "verified": false,
+    "verify_note": "NTRS ID 20150016964. Year not shown in the search result; check the page."
+  },
+  {
+    "id": "src_nasa_sleep_prd",
+    "title": "Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload (PRD)",
+    "publisher": "NASA",
+    "year": null,
+    "url": "https://ntrs.nasa.gov/api/citations/20160003864/downloads/20160003864.pdf",
+    "supports": "Ground evidence suggests astronaut sleep duration is likely to lead to performance impairment and health consequences.",
+    "verified": false,
+    "verify_note": "NTRS ID 20160003864. Year not shown; check the page."
+  },
+  {
+    "id": "src_hera_2020",
+    "title": "Cognitive Performance During Confinement and Sleep Restriction in NASA's Human Exploration Research Analog (HERA)",
+    "publisher": "Frontiers in Physiology",
+    "year": 2020,
+    "url": "https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2020.00394/pdf",
+    "doi": "10.3389/fphys.2020.00394",
+    "supports": "Studied effects of confinement and sleep deprivation on cognition in 32 astronaut-like subjects in simulated missions.",
+    "verified": false,
+    "verify_note": "Front. Physiol. 11:394. The author list in the search result was garbled (appears to be Nasrini et al.); check authors."
+  },
+  {
+    "id": "src_nasa_behav_evidence",
+    "title": "Risk of Adverse Cognitive or Behavioral Conditions and Psychiatric Disorders: Evidence Report",
+    "publisher": "NASA",
+    "year": null,
+    "url": "https://ntrs.nasa.gov/citations/20160004365",
+    "supports": "Longer, isolated and confined missions carry greater behavioral health risk; monitoring early risk factors helps.",
+    "verified": false,
+    "verify_note": "NTRS ID 20160004365. Year not shown; check the page."
+  },
+  {
+    "id": "src_nasa_behav_evidence_update",
+    "title": "Evidence Report: Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-Mission Health and Performance and Long-Term Health Effects",
+    "publisher": "NASA Human Research Program",
+    "year": 2025,
+    "url": "https://ntrs.nasa.gov/api/citations/20250001454/downloads/BMed%20Evidence%20Report%20final%202-10-25.docx",
+    "supports": "Risk statement cites extended isolation and confinement and greater distance from Earth.",
+    "verified": false,
+    "verify_note": "Year 2025 inferred from file name and NTRS ID; verify."
+  },
+  {
+    "id": "src_nasa_behav_risk_page",
+    "title": "Behavioral Medicine risk page, NASA Human Research Roadmap",
+    "publisher": "NASA",
+    "year": 2025,
+    "url": "https://www.nasa.gov/?p=249349",
+    "supports": "Isolation and confinement can reduce cognitive and behavioral functioning; validated countermeasures for exploration missions are not yet available.",
+    "verified": false,
+    "verify_note": "Page showed 'Last Updated Sep 17, 2025'. Confirm exact page title."
+  },
+  {
+    "id": "src_nasa_exercise_iws",
+    "title": "HRP Investigators' Workshop abstract on exercise countermeasures and exploration missions",
+    "publisher": "NASA",
+    "year": 2023,
+    "url": "https://ntrs.nasa.gov/citations/20230013277",
+    "supports": "Aerobic capacity, lower-body muscle area and strength each fall by about 10 to 15 percent after long ISS missions; exercise countermeasures are not fully protective.",
+    "verified": false,
+    "verify_note": "NTRS ID 20230013277. 2023 is the NTRS 'date acquired'; confirm title, authors and year."
+  },
+  {
+    "id": "src_roberts_2025",
+    "title": "Musculoskeletal Responses to Spaceflight: Mechanisms, Countermeasures and Key Gaps",
+    "publisher": "American Journal of Physiology-Cell Physiology",
+    "year": 2025,
+    "url": "https://eprints.soton.ac.uk/507468/1/roberts-et-al-2025-musculoskeletal-responses-to-spaceflight-mechanisms-countermeasures-and-key-gaps.pdf",
+    "doi": "10.1152/ajpcell.00649.2025",
+    "supports": "Describes rapid muscle atrophy and progressive bone loss in spaceflight and the role of countermeasures such as exercise.",
+    "verified": false,
+    "verify_note": "Journal name inferred from the DOI prefix; verify. First author appears to be Roberts."
+  },
+  {
+    "id": "src_loerch_exercise",
+    "title": "Exercise Countermeasures on ISS: Summary and Future Directions",
+    "publisher": "Aerospace Medical Association",
+    "year": null,
+    "url": "https://doi.org/10.3357/AMHP.EC12.2015",
+    "doi": "10.3357/AMHP.EC12.2015",
+    "supports": "Summarizes the first decade of ISS exercise countermeasures to protect crew health and performance.",
+    "verified": false,
+    "verify_note": "Author appears to be L. H. Loerch. Journal name and year not confirmed; URL built from the DOI."
+  },
+  {
+    "id": "src_arzeno_cv",
+    "title": "Spaceflight-induced Cardiovascular Changes and Recovery during NASA's Functional Task Test",
+    "publisher": "NASA",
+    "year": null,
+    "url": "https://ntrs.nasa.gov/api/citations/20100036638/downloads/20100036638.pdf",
+    "supports": "Reports that spaceflight causes an increase in heart rate and a decrease in parasympathetic activity.",
+    "verified": false,
+    "verify_note": "Arzeno et al., NTRS ID 20100036638. Year not shown; check."
+  },
+  {
+    "id": "src_otsuka_hrv",
+    "title": "Long-term exposure to space's microgravity alters the time structure of heart rate variability of astronauts",
+    "publisher": "Heliyon",
+    "year": 2016,
+    "url": "https://doaj.org/article/11207814ef8944fc920f1cb36a0b37f9",
+    "supports": "Spaceflight alters cardiovascular dynamics; this paper is about heart rate VARIABILITY, not resting heart rate.",
+    "verified": false,
+    "verify_note": "Otsuka et al., Heliyon Dec 2016. Weak support for resting heart rate; flag for human review."
+  },
+  {
+    "id": "src_stahn_temp_2017",
+    "title": "Increased core body temperature in astronauts during long-duration space missions",
+    "publisher": "Scientific Reports",
+    "year": 2017,
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5701078",
+    "doi": "10.1038/s41598-017-15560-w",
+    "supports": "Reports a sustained increase in astronauts' core body temperature, including at rest, on long missions.",
+    "verified": false,
+    "verify_note": "Stahn et al., Sci Rep 7:16180."
+  },
+  {
+    "id": "src_statpearls_pulseox",
+    "title": "Pulse Oximetry",
+    "publisher": "StatPearls",
+    "year": null,
+    "url": "https://statpearls.com/sp/al/2/28070/",
+    "supports": "Normal pulse oximeter readings commonly range from 95 to 100 percent; hypoxemia is oxygen saturation below 90 percent.",
+    "verified": false,
+    "verify_note": "This URL is a StatPearls mirror. Replace with the canonical NCBI Bookshelf URL; authors and year not shown."
+  },
+  {
+    "id": "src_nasa_std_3001_v1",
+    "title": "NASA-STD-3001 Volume 1, Revision C: NASA Spaceflight Human-System Standard, Crew Health",
+    "publisher": "NASA Office of the Chief Health and Medical Officer",
+    "year": 2023,
+    "url": "https://www.nasa.gov/reference/nasa-std-3001",
+    "alt_url": "https://standards.nasa.gov/node/238",
+    "supports": "Sets crew health requirements including fitness for duty, permissible exposure limits, permissible outcome limits and countermeasures.",
+    "verified": false,
+    "verify_note": "Revision C date taken from the document history (Sept 15, 2023); verify."
+  }
 ]

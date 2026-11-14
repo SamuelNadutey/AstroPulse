@@ -1,1 +1,338 @@
-[]
+[
+  {
+    "id": "resting_hr.yellow",
+    "indicator_key": "resting_hr",
+    "trigger": {"severity": "yellow"},
+    "headline": "Resting heart rate is a little above your usual range.",
+    "likely_contributors": ["Recent change in activity", "Caffeine or mild dehydration", "Stress from workload"],
+    "suggested_actions": [
+      {"id": "rest-quietly", "text": "Recheck after a few minutes of quiet rest.", "source_ids": ["TODO"]},
+      {"id": "note-stimulants", "text": "Note any recent exertion or stimulant use.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "2 hours",
+    "contact_ground_text": "Contact ground if it stays higher than usual or you feel unwell.",
+    "source_ids": ["src_arzeno_cv"]
+  },
+  {
+    "id": "resting_hr.orange",
+    "indicator_key": "resting_hr",
+    "trigger": {"severity": "orange"},
+    "headline": "Resting heart rate is elevated above your usual range.",
+    "likely_contributors": ["Prolonged workload or stress", "Reduced cardiovascular recovery", "Dehydration or illness starting"],
+    "suggested_actions": [
+      {"id": "rest-rehydrate", "text": "Rest and rehydrate.", "source_ids": ["TODO"]},
+      {"id": "recheck-calm", "text": "Recheck in a calm setting.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 hour",
+    "contact_ground_text": "Contact ground if it remains elevated or other symptoms appear.",
+    "source_ids": ["src_arzeno_cv", "src_otsuka_hrv"]
+  },
+  {
+    "id": "resting_hr.red",
+    "indicator_key": "resting_hr",
+    "trigger": {"severity": "red"},
+    "headline": "Resting heart rate is very high.",
+    "likely_contributors": ["Significant cardiovascular stress", "Dehydration or illness", "Equipment or sensor issue"],
+    "suggested_actions": [
+      {"id": "stop-activity", "text": "Stop strenuous activity and sit quietly.", "source_ids": ["TODO"]},
+      {"id": "check-sensor", "text": "Check the sensor placement.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "15 minutes",
+    "contact_ground_text": "Contact ground now, or as soon as the communications link allows. In a blackout, log it and add it to the relay summary.",
+    "source_ids": ["src_arzeno_cv", "src_nasa_std_3001_v1"]
+  },
+  {
+    "id": "resting_hr.drift",
+    "indicator_key": "resting_hr",
+    "trigger": {"drift": true},
+    "headline": "Resting heart rate has been creeping up over time.",
+    "likely_contributors": ["Gradual deconditioning", "Increasing workload", "Ongoing stress"],
+    "suggested_actions": [
+      {"id": "recovery-time", "text": "Schedule protected recovery time.", "source_ids": ["TODO"]},
+      {"id": "review-load", "text": "Review recent workload and sleep.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "4 hours",
+    "contact_ground_text": "Contact ground to review the trend, or log it for the relay summary during a blackout.",
+    "source_ids": ["src_otsuka_hrv"]
+  },
+  {
+    "id": "sleep_hours.yellow",
+    "indicator_key": "sleep_hours",
+    "trigger": {"severity": "yellow"},
+    "headline": "Sleep duration is a little low.",
+    "likely_contributors": ["Shift schedule", "Noise or light", "Stress or excitement"],
+    "suggested_actions": [
+      {"id": "wind-down", "text": "Extend your wind-down routine.", "source_ids": ["TODO"]},
+      {"id": "dark-quiet", "text": "Keep the sleep area dark and quiet.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 day",
+    "contact_ground_text": "Contact ground if sleep stays short for more than a couple of nights.",
+    "source_ids": ["src_nasa_sleep_evidence"]
+  },
+  {
+    "id": "sleep_hours.orange",
+    "indicator_key": "sleep_hours",
+    "trigger": {"severity": "orange"},
+    "headline": "Sleep duration is low enough to affect alertness.",
+    "likely_contributors": ["Circadian disruption", "Workload", "Environmental disturbances"],
+    "suggested_actions": [
+      {"id": "adjust-light", "text": "Ask about adjusting the light schedule.", "source_ids": ["TODO"]},
+      {"id": "protect-sleep", "text": "Protect sleep time in the schedule.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "12 hours",
+    "contact_ground_text": "Contact ground soon to review sleep countermeasures.",
+    "source_ids": ["src_nasa_sleep_evidence", "src_nasa_sleep_prd"]
+  },
+  {
+    "id": "sleep_hours.red",
+    "indicator_key": "sleep_hours",
+    "trigger": {"severity": "red"},
+    "headline": "Sleep is very short and may affect performance and health.",
+    "likely_contributors": ["Severe sleep restriction", "Circadian disruption", "High workload"],
+    "suggested_actions": [
+      {"id": "seek-support", "text": "Ask for help prioritizing sleep.", "source_ids": ["TODO"]},
+      {"id": "minimize-stimuli", "text": "Minimize light and noise during sleep time.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "4 hours",
+    "contact_ground_text": "Contact ground now, or as soon as the communications link allows. If you are in a blackout, log it for the relay summary.",
+    "source_ids": ["src_nasa_sleep_evidence", "src_nasa_std_3001_v1"]
+  },
+  {
+    "id": "sleep_hours.drift",
+    "indicator_key": "sleep_hours",
+    "trigger": {"drift": true},
+    "headline": "Sleep duration has been trending down.",
+    "likely_contributors": ["Creeping schedule pressure", "Worsening sleep environment", "Increasing stress"],
+    "suggested_actions": [
+      {"id": "review-sleep-schedule", "text": "Review the sleep schedule with the crew.", "source_ids": ["TODO"]},
+      {"id": "track-triggers", "text": "Track what changes before short-sleep nights.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 day",
+    "contact_ground_text": "Contact ground to discuss the trend, or add it to the relay summary during a blackout.",
+    "source_ids": ["src_hera_2020"]
+  },
+  {
+    "id": "temperature.yellow",
+    "indicator_key": "temperature",
+    "trigger": {"severity": "yellow"},
+    "headline": "Body temperature is a little above your usual range.",
+    "likely_contributors": ["Recent activity", "Warm environment", "Minor infection"],
+    "suggested_actions": [
+      {"id": "rest-cool", "text": "Rest and rehydrate.", "source_ids": ["TODO"]},
+      {"id": "recheck-cooled", "text": "Recheck after cooling down.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "2 hours",
+    "contact_ground_text": "Contact ground if it stays above your usual range or you feel unwell.",
+    "source_ids": ["src_stahn_temp_2017"]
+  },
+  {
+    "id": "temperature.orange",
+    "indicator_key": "temperature",
+    "trigger": {"severity": "orange"},
+    "headline": "Body temperature is elevated above your usual range.",
+    "likely_contributors": ["Infection or inflammation", "Overheating", "Equipment error"],
+    "suggested_actions": [
+      {"id": "cooler-area", "text": "Move to a cooler area if possible.", "source_ids": ["TODO"]},
+      {"id": "recheck-same-sensor", "text": "Recheck using the same sensor after rest.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 hour",
+    "contact_ground_text": "Contact ground soon to report the reading and any symptoms.",
+    "source_ids": ["src_stahn_temp_2017"]
+  },
+  {
+    "id": "temperature.red",
+    "indicator_key": "temperature",
+    "trigger": {"severity": "red"},
+    "headline": "Body temperature is very high.",
+    "likely_contributors": ["Significant infection or heat stress", "Sensor error", "Dehydration"],
+    "suggested_actions": [
+      {"id": "stop-exertion", "text": "Stop exertion and cool down if possible.", "source_ids": ["TODO"]},
+      {"id": "verify-sensor", "text": "Verify the sensor is attached correctly.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "15 minutes",
+    "contact_ground_text": "Contact ground now, or as soon as the communications link allows. In a blackout, log it and add to the relay summary.",
+    "source_ids": ["src_stahn_temp_2017", "src_nasa_std_3001_v1"]
+  },
+  {
+    "id": "temperature.drift",
+    "indicator_key": "temperature",
+    "trigger": {"drift": true},
+    "headline": "Body temperature has been drifting upward.",
+    "likely_contributors": ["Gradual overheating", "Developing illness", "Sensor calibration shift"],
+    "suggested_actions": [
+      {"id": "check-sensor-env", "text": "Check the sensor and environment.", "source_ids": ["TODO"]},
+      {"id": "consistent-recheck", "text": "Schedule a recheck at the same time each day.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "4 hours",
+    "contact_ground_text": "Contact ground to review the trend, or log it for the relay summary during a blackout.",
+    "source_ids": ["src_stahn_temp_2017"]
+  },
+  {
+    "id": "mood.yellow",
+    "indicator_key": "mood",
+    "trigger": {"severity": "yellow"},
+    "headline": "Mood and stress score is a little low.",
+    "likely_contributors": ["Workload pressure", "Isolation", "Sleep loss"],
+    "suggested_actions": [
+      {"id": "short-break", "text": "Take a short break and talk with a crewmate.", "source_ids": ["TODO"]},
+      {"id": "note-stressors", "text": "Note what is stressing you most.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 day",
+    "contact_ground_text": "Contact ground if low mood lasts or worsens.",
+    "source_ids": ["src_nasa_behav_evidence"]
+  },
+  {
+    "id": "mood.orange",
+    "indicator_key": "mood",
+    "trigger": {"severity": "orange"},
+    "headline": "Mood and stress score is low.",
+    "likely_contributors": ["Ongoing isolation", "High workload", "Poor sleep or fatigue"],
+    "suggested_actions": [
+      {"id": "scheduled-countermeasure", "text": "Use a scheduled countermeasure such as a mindfulness or exercise block.", "source_ids": ["TODO"]},
+      {"id": "reach-crewmate", "text": "Reach out to a crewmate.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "12 hours",
+    "contact_ground_text": "Contact ground soon to discuss support options.",
+    "source_ids": ["src_nasa_behav_evidence_update", "src_hera_2020"]
+  },
+  {
+    "id": "mood.red",
+    "indicator_key": "mood",
+    "trigger": {"severity": "red"},
+    "headline": "Mood and stress score is very low.",
+    "likely_contributors": ["Severe isolation stress", "Burnout", "Sleep or health problem"],
+    "suggested_actions": [
+      {"id": "ask-support", "text": "Ask a crewmate to stay nearby.", "source_ids": ["TODO"]},
+      {"id": "pause-demands", "text": "Pause non-essential demands if the schedule allows.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "4 hours",
+    "contact_ground_text": "Contact ground now, or as soon as the communications link allows. In a blackout, log it for the relay summary.",
+    "source_ids": ["src_nasa_behav_risk_page", "src_nasa_std_3001_v1"]
+  },
+  {
+    "id": "mood.drift",
+    "indicator_key": "mood",
+    "trigger": {"drift": true},
+    "headline": "Mood and stress score has been trending down.",
+    "likely_contributors": ["Creeping isolation", "Increasing workload", "Declining sleep"],
+    "suggested_actions": [
+      {"id": "social-activity", "text": "Plan a social or leisure activity with the crew.", "source_ids": ["TODO"]},
+      {"id": "review-workload-sleep", "text": "Review workload and sleep patterns.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 day",
+    "contact_ground_text": "Contact ground to review the trend, or add it to the relay summary during a blackout.",
+    "source_ids": ["src_nasa_behav_evidence_update"]
+  },
+  {
+    "id": "exercise_min.yellow",
+    "indicator_key": "exercise_min",
+    "trigger": {"severity": "yellow"},
+    "headline": "Exercise time is a little below target.",
+    "likely_contributors": ["Schedule pressure", "Equipment unavailable", "Fatigue"],
+    "suggested_actions": [
+      {"id": "short-movement", "text": "Add a short movement block to the schedule.", "source_ids": ["TODO"]},
+      {"id": "check-equipment", "text": "Check equipment availability.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 day",
+    "contact_ground_text": "Contact ground if exercise stays low for several days.",
+    "source_ids": ["src_nasa_exercise_iws"]
+  },
+  {
+    "id": "exercise_min.orange",
+    "indicator_key": "exercise_min",
+    "trigger": {"severity": "orange"},
+    "headline": "Exercise time is below target.",
+    "likely_contributors": ["Ongoing schedule issues", "Equipment problems", "Low energy or mood"],
+    "suggested_actions": [
+      {"id": "prioritize-exercise", "text": "Prioritize the next scheduled exercise session.", "source_ids": ["TODO"]},
+      {"id": "discuss-alternatives", "text": "Discuss alternative exercises with ground.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "12 hours",
+    "contact_ground_text": "Contact ground soon to adjust the countermeasure plan.",
+    "source_ids": ["src_loerch_exercise"]
+  },
+  {
+    "id": "exercise_min.red",
+    "indicator_key": "exercise_min",
+    "trigger": {"severity": "red"},
+    "headline": "Exercise time is far below target.",
+    "likely_contributors": ["Countermeasure breakdown", "Illness or injury", "Scheduling conflict"],
+    "suggested_actions": [
+      {"id": "revise-plan", "text": "Contact ground to revise the exercise plan.", "source_ids": ["TODO"]},
+      {"id": "assess-barriers", "text": "Assess whether equipment or health is blocking exercise.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "4 hours",
+    "contact_ground_text": "Contact ground now, or as soon as the communications link allows. In a blackout, log it and add to the relay summary.",
+    "source_ids": ["src_nasa_exercise_iws", "src_nasa_std_3001_v1"]
+  },
+  {
+    "id": "exercise_min.drift",
+    "indicator_key": "exercise_min",
+    "trigger": {"drift": true},
+    "headline": "Exercise time has been trending down.",
+    "likely_contributors": ["Creeping schedule pressure", "Reduced motivation", "Equipment issues"],
+    "suggested_actions": [
+      {"id": "crew-session", "text": "Schedule a crew exercise session.", "source_ids": ["TODO"]},
+      {"id": "review-barriers", "text": "Review barriers to daily exercise.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 day",
+    "contact_ground_text": "Contact ground to review the trend, or add it to the relay summary during a blackout.",
+    "source_ids": ["src_roberts_2025"]
+  },
+  {
+    "id": "spo2.yellow",
+    "indicator_key": "spo2",
+    "trigger": {"severity": "yellow"},
+    "headline": "Blood oxygen is a little below the usual range.",
+    "likely_contributors": ["Sensor placement", "Recent activity", "Mild breathing issue"],
+    "suggested_actions": [
+      {"id": "check-placement", "text": "Check sensor placement and recheck.", "source_ids": ["TODO"]},
+      {"id": "rest-recheck", "text": "Rest quietly and recheck.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "15 minutes",
+    "contact_ground_text": "Contact ground if the reading stays low or you feel short of breath.",
+    "source_ids": ["src_statpearls_pulseox"]
+  },
+  {
+    "id": "spo2.orange",
+    "indicator_key": "spo2",
+    "trigger": {"severity": "orange"},
+    "headline": "Blood oxygen is below the usual range.",
+    "likely_contributors": ["Sensor error", "Breathing issue", "Reduced lung function"],
+    "suggested_actions": [
+      {"id": "different-sensor", "text": "Recheck with a different sensor if available.", "source_ids": ["TODO"]},
+      {"id": "breathe-slowly", "text": "Rest and breathe slowly.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "10 minutes",
+    "contact_ground_text": "Contact ground soon to report the reading and symptoms.",
+    "source_ids": ["src_statpearls_pulseox"]
+  },
+  {
+    "id": "spo2.red",
+    "indicator_key": "spo2",
+    "trigger": {"severity": "red"},
+    "headline": "Blood oxygen is very low.",
+    "likely_contributors": ["Severe breathing problem", "Sensor error", "Altitude or pressure issue"],
+    "suggested_actions": [
+      {"id": "alert-ground", "text": "Contact ground immediately if the link is available.", "source_ids": ["TODO"]},
+      {"id": "recheck-sensor", "text": "Recheck with the sensor at rest.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "5 minutes",
+    "contact_ground_text": "Contact ground now, or as soon as the communications link allows. In a blackout, log it and add to the relay summary.",
+    "source_ids": ["src_statpearls_pulseox", "src_nasa_std_3001_v1"]
+  },
+  {
+    "id": "spo2.drift",
+    "indicator_key": "spo2",
+    "trigger": {"drift": true},
+    "headline": "Blood oxygen has been trending down.",
+    "likely_contributors": ["Sensor drift", "Developing breathing issue", "Environmental factor"],
+    "suggested_actions": [
+      {"id": "sensor-recheck", "text": "Check the sensor and recheck at rest.", "source_ids": ["TODO"]},
+      {"id": "track-readings", "text": "Track readings at the same time each day.", "source_ids": ["TODO"]}
+    ],
+    "remeasure_after": "1 hour",
+    "contact_ground_text": "Contact ground to review the trend, or add it to the relay summary during a blackout.",
+    "source_ids": ["src_statpearls_pulseox"]
+  }
+]

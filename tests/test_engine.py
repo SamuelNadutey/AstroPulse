@@ -412,12 +412,15 @@ def test_adversarial_duplicate_dates():
     assert baseline.enough_data is False
 
 
-def test_sources_json_are_placeholders():
+def test_sources_json_are_unverified_citation_stubs():
     sources = load_json("data/sources.json")
-    indicators = load_json("data/indicators.json")
-    indicator_keys = {item["key"] for item in indicators}
-    assert len(sources) == 6
+    assert len(sources) == 14
     for entry in sources:
         assert entry["verified"] is False
-        assert entry["title"] == "PLACEHOLDER: replace with a real cited source"
-        assert entry["indicator"] in indicator_keys
+        assert entry["id"].startswith("src_")
+        assert entry["title"]
+        assert entry["title"] != "PLACEHOLDER: replace with a real cited source"
+        assert entry["publisher"]
+        assert entry["url"]
+        assert entry["supports"]
+        assert "verify_note" in entry
