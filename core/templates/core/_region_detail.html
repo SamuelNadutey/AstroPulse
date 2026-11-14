@@ -1,7 +1,3 @@
-{# Region detail panel, loaded by HTMX into #region-panel. Shows each
-   indicator mapped to the region: value today, severity icon + text +
-   color and the engine's reasons, plus a per-indicator trend link
-   (trend charts arrive in Stage 5). #}
 <div class="region-detail sev-{{ region.severity }}">
   <div class="region-detail-head">
     <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=region.display.shape only %}</span>
@@ -16,9 +12,9 @@
         <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=entry.display.shape only %}</span>
         <span class="sev-word">{{ entry.display.word }}</span>
         <span class="sev-name">({{ entry.result.severity }})</span>
-        <strong class="region-indicator-label">{{ entry.label }}</strong>
+        <strong class="region-indicator-label">{{ entry.label }}{% if entry.is_simulated %} <span class="badge-simulated">SIMULATED</span>{% endif %}</strong>
         {% if entry.value is not None %}
-        <span class="status-value">{{ entry.value }} {{ entry.unit }}</span>
+        <span class="status-value">{{ entry.value }}{% if entry.key == "mood" %} / 5{% else %} {{ entry.unit }}{% endif %}</span>
         {% endif %}
       </div>
       {% if entry.result.reasons %}

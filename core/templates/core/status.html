@@ -6,7 +6,6 @@
 <p>No data yet. Complete a <a href="{% url 'core:checkin' %}">daily check-in</a> first.</p>
 {% else %}
 <p class="placeholder-note">For {{ crew }}. Personal thresholds are placeholders, not clinical values.</p>
-{# Overall banner: worst severity with icon + text + color. #}
 <div class="overall-banner sev-{{ overall.severity }}" role="status">
   <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=overall.shape only %}</span>
   <strong class="overall-word">{{ overall.word }}</strong>
@@ -33,7 +32,6 @@
   </section>
 </div>
 
-{# No-JS fallback: the full per-indicator list (Stage 3 output). #}
 <h3>All indicators</h3>
 <div class="status-list">
   {% for entry in entries %}
@@ -42,12 +40,9 @@
       <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=entry.display.shape only %}</span>
       <span class="sev-word">{{ entry.display.word }}</span>
       <span class="sev-name">({{ entry.result.severity }})</span>
-      <h4 class="status-label">{{ entry.label }}</h4>
+      <h4 class="status-label">{{ entry.label }}{% if entry.is_simulated %} <span class="badge-simulated">SIMULATED</span>{% endif %}</h4>
       {% if entry.value is not None %}
-      <span class="status-value">{{ entry.value }} {{ entry.unit }}</span>
-      {% endif %}
-      {% if entry.is_simulated %}
-      <span class="badge-simulated">SIMULATED</span>
+      <span class="status-value">{{ entry.value }}{% if entry.key == "mood" %} / 5{% else %} {{ entry.unit }}{% endif %}</span>
       {% endif %}
     </div>
     {% if entry.result.reasons %}
