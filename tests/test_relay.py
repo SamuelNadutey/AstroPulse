@@ -217,3 +217,21 @@ def test_relay_export_filename_includes_date(client):
     assert response.status_code == 200
     today = timezone.localdate().isoformat()
     assert f'relay_summary_{today}.txt' in response["Content-Disposition"]
+
+
+@pytest.mark.django_db
+def test_relay_export_includes_logged_action(client):
+    crew, _ = CrewMember.objects.get_or_create(name="Test crew")
+    today = timezone.localdate()
+    RelayItem.objects.create(
+        crew_member=crew,
+        for_date=today,
+        indicator_key="resting_hr",
+        severity="orange",
+        headline="Elevated heart rate",
+        action_taken="Rested and rechecked",
+    )
+    CheckIn.objects.create(crew_member=crew, date=today, environment="station", in_blackout=False)
+    response = client.get(reverse("core:relay_export"))
+    content = response.content.decode()
+    assert "Action taken: Rested and rechecked" in content

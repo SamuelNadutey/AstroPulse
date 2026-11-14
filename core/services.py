@@ -11,6 +11,8 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
+from django.utils import timezone
+
 from engine.baseline import build_baseline
 from engine.status import (
     Indicator,
@@ -23,7 +25,7 @@ from engine.status import (
     evaluate,
 )
 
-from core.models import AppState, Reading, RelayItem
+from core.models import ActionLog, AppState, Reading, RelayItem
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -192,6 +194,108 @@ def ensure_relay_item(
         indicator_key=indicator_key,
         **defaults,
     )
+
+
+def log_action(
+    crew_member,
+    date,
+    indicator_key: str,
+    action_id: str,
+    action_text: str = "",
+) -> ActionLog:
+    """Record that a suggested action was completed.
+
+    Updates the matching open RelayItem.action_taken so the relay summary
+    shows what was done. Duplicate logs for the same day are ignored.
+    """
+    log, _ = ActionLog.objects.get_or_create(
+        crew_member=crew_member,
+        date=date,
+        indicator_key=indicator_key,
+        action_id=action_id,
+        defaults={"completed": True},
+    )
+    RelayItem.objects.filter(
+        crew_member=crew_member,
+        for_date=date,
+        indicator_key=indicator_key,
+        resolved=False,
+    ).update(action_taken=action_text or action_id)
+    return log
+
+
+def _streaks(checkin_dates: list) -> tuple[int, int]:
+    """Return (current_streak, longest_streak) from a sorted list of dates."""
+    if not checkin_dates:
+        return 0, 0
+    today = timezone.localdate()
+    sorted_dates = sorted(set(checkin_dates))
+    longest = 1
+    current = 1
+    for prev, nxt in zip(sorted_dates, sorted_dates[1:]):
+        if (nxt - prev).days == 1:
+            current += 1
+            longest = max(longest, current)
+        else:
+            current = 1
+    # Current streak only counts if it includes today or ended yesterday.
+    most_recent = sorted_dates[-1]
+    if (today - most_recent).days > 1:
+        current_streak = 0
+    else:
+        # Count backwards from the most recent date.
+        current_streak = 1
+        for prev, nxt in zip(sorted_dates[-2::-1], sorted_dates[:0:-1]):
+            if (nxt - prev).days == 1:
+                current_streak += 1
+            else:
+                break
+    return current_streak, longest
+
+
+def progress_for(crew_member, date) -> dict:
+    """Return streak, check-in count and score data for the progress page.
+
+    Score is computed from check-ins completed and actions logged only;
+    health values and severities are never used (AGENTS.md hard rule 7).
+    Point values are placeholders, not clinical or operational values.
+    """
+    from core.models import CheckIn
+
+    # Placeholder point values; tuned for demo storytelling, not rewards.
+    POINTS_PER_CHECKIN = 10
+    POINTS_PER_ACTION = 2
+
+    checkin_dates = list(
+        CheckIn.objects.filter(crew_member=crew_member, date__lte=date)
+        .order_by("date")
+        .values_list("date", flat=True)
+    )
+    current_streak, longest_streak = _streaks(checkin_dates)
+
+    week_start = date - timedelta(days=6)
+    weekly_checkins = CheckIn.objects.filter(
+        crew_member=crew_member, date__gte=week_start, date__lte=date
+    ).count()
+    weekly_actions = ActionLog.objects.filter(
+        crew_member=crew_member, date__gte=week_start, date__lte=date
+    ).count()
+    weekly_score = (weekly_checkins * POINTS_PER_CHECKIN) + (
+        weekly_actions * POINTS_PER_ACTION
+    )
+
+    missed = date not in checkin_dates and (
+        not checkin_dates or (date - max(checkin_dates)).days > 0
+    )
+
+    return {
+        "current_streak": current_streak,
+        "longest_streak": longest_streak,
+        "weekly_checkins": weekly_checkins,
+        "weekly_actions": weekly_actions,
+        "weekly_score": weekly_score,
+        "missed_today": missed,
+    }
 
 
 def _engine_indicator(config: dict) -> Indicator:

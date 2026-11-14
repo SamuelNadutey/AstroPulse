@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from core.forms import CheckInForm
-from core.models import CheckIn, CrewMember, Reading, RelayItem
+from core.models import ActionLog, CheckIn, CrewMember, Reading, RelayItem
 from core.charts import build_trend_figure, trend_summary
 from core.guidance import select_guidance
 from core.services import (
@@ -31,6 +31,8 @@ from core.services import (
     current_blackout,
     indicator_trend,
     load_indicators,
+    log_action,
+    progress_for,
     region_statuses,
     run_status_for,
     set_blackout,
@@ -480,3 +482,53 @@ def relay_export(request):
     response = HttpResponse(text, content_type="text/plain; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+def log_action_view(request):
+    """Log a suggested action as completed (HTMX-aware).
+
+    Expects POST params: date, indicator_key, action_id, action_text.
+    Returns a small partial with the action marked done.
+    """
+    if request.method != "POST":
+        raise Http404("Action logging requires POST.")
+
+    crew = _current_crew()
+    if crew is None:
+        raise Http404("No crew member selected.")
+
+    raw_date = request.POST.get("date")
+    date = parse_date(raw_date) if raw_date else None
+    if date is None:
+        date = timezone.localdate()
+
+    indicator_key = request.POST.get("indicator_key", "").strip()
+    action_id = request.POST.get("action_id", "").strip()
+    action_text = request.POST.get("action_text", "").strip()
+    if not indicator_key or not action_id:
+        raise Http404("indicator_key and action_id are required.")
+
+    log_action(crew, date, indicator_key, action_id, action_text)
+
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "core/_action_done.html",
+            {
+                "indicator_key": indicator_key,
+                "action_id": action_id,
+                "action_text": action_text,
+            },
+        )
+    return redirect(request.META.get("HTTP_REFERER") or "core:status")
+
+
+def progress(request):
+    """Progress view: streaks, weekly check-ins, and a completion-based score."""
+    crew = _current_crew()
+    if crew is None:
+        return render(request, "core/progress.html", {"crew": None})
+    date = _clean_date(request.GET.get("date"))
+    context = {"crew": crew, "date": date}
+    context.update(progress_for(crew, date))
+    return render(request, "core/progress.html", context)

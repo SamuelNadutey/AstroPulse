@@ -17,6 +17,7 @@
       <a href="{% url 'core:checkin' %}">Daily check-in</a>
       <a href="{% url 'core:status' %}">Status</a>
       <a href="{% url 'core:relay' %}">Relay</a>
+      <a href="{% url 'core:progress' %}">Progress</a>
     </nav>
     <form class="blackout-toggle" action="{% url 'core:blackout_toggle' %}" method="post">
       {% csrf_token %}

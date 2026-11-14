@@ -141,3 +141,34 @@ class RelayItem(models.Model):
 
     def __str__(self) -> str:
         return f"{self.crew_member} {self.indicator_key} {self.for_date}: {self.severity}"
+
+
+class ActionLog(models.Model):
+    """One suggested action marked as done by the crew member.
+
+    The score and streak logic reward completing check-ins and logging
+    actions, never health outcomes (AGENTS.md hard rule 7).
+    """
+
+    crew_member = models.ForeignKey(
+        CrewMember,
+        on_delete=models.CASCADE,
+        related_name="action_logs",
+    )
+    date = models.DateField()
+    indicator_key = models.CharField(max_length=32)
+    action_id = models.CharField(max_length=64)
+    completed = models.BooleanField(default=True)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "indicator_key", "action_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["crew_member", "date", "indicator_key", "action_id"],
+                name="unique_action_log_per_day",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.crew_member} {self.indicator_key} {self.action_id} {self.date}"

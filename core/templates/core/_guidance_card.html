@@ -30,9 +30,26 @@
     <div class="gc-section gc-actions">
       <h4 class="gc-heading">What you can do</h4>
       {% if guidance.suggested_actions %}
-      <ul>
+      <ul class="action-list">
         {% for action in guidance.suggested_actions %}
-        <li>{{ action.text }}</li>
+        <li id="action-{{ indicator_key|default:guidance.indicator_key }}-{{ action.id }}">
+          <span class="action-text">{{ action.text }}</span>
+          <form
+            class="action-form"
+            method="post"
+            action="{% url 'core:log_action' %}"
+            hx-post="{% url 'core:log_action' %}"
+            hx-target="#action-{{ indicator_key|default:guidance.indicator_key }}-{{ action.id }}"
+            hx-swap="outerHTML"
+          >
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+            <input type="hidden" name="indicator_key" value="{{ indicator_key|default:guidance.indicator_key }}">
+            <input type="hidden" name="action_id" value="{{ action.id }}">
+            <input type="hidden" name="action_text" value="{{ action.text }}">
+            <button type="submit" class="action-done-btn">Done</button>
+          </form>
+        </li>
         {% endfor %}
       </ul>
       {% else %}

@@ -23,7 +23,7 @@
       </ul>
       {% endif %}
       <a class="trend-link" href="{% url 'core:trend' entry.key %}?date={{ date|date:'Y-m-d' }}">View trend</a>
-      {% include "core/_guidance_card.html" with result=entry.result display=entry.display guidance=entry.guidance only %}
+      {% include "core/_guidance_card.html" with result=entry.result display=entry.display guidance=entry.guidance indicator_key=entry.key date=date only %}
     </div>
     {% endfor %}
   </div>

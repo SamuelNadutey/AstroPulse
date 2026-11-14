@@ -17,4 +17,6 @@ urlpatterns = [
     path("relay/", views.relay, name="relay"),
     path("relay/<int:item_id>/resolve/", views.relay_resolve, name="relay_resolve"),
     path("relay/export/", views.relay_export, name="relay_export"),
+    path("action/log/", views.log_action_view, name="log_action"),
+    path("progress/", views.progress, name="progress"),
 ]

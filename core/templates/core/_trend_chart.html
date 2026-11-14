@@ -3,7 +3,7 @@
 {% if summary %}
 <p class="trend-summary">{{ summary }}</p>
 {% endif %}
-{% include "core/_guidance_card.html" with result=status_result display=status_display guidance=guidance only %}
+{% include "core/_guidance_card.html" with result=status_result display=status_display guidance=guidance indicator_key=indicator.key date=date only %}
 <details class="trend-table">
   <summary>Show data table</summary>
   <table>

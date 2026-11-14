@@ -664,3 +664,133 @@ body {
   cursor: pointer;
   font-size: 0.85rem;
 }
+
+/* Guidance card action buttons. */
+.action-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.action-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.action-list li:last-child {
+  border-bottom: none;
+}
+
+.action-text {
+  flex: 1;
+}
+
+.action-form {
+  margin: 0;
+}
+
+.action-done-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #2b6cb0;
+  border-radius: 0.25rem;
+  background: #ffffff;
+  color: #2b6cb0;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.action-done-btn:hover {
+  background: #ebf8ff;
+}
+
+.action-done {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  color: #2f855a;
+}
+
+.action-done-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Progress page. */
+.progress-page {
+  max-width: 60rem;
+}
+
+.progress-meta {
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.progress-reassurance {
+  padding: 0.75rem 1rem;
+  border-left: 5px solid #2b6cb0;
+  background: #ebf8ff;
+  color: #2c5282;
+  font-weight: 600;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.progress-card {
+  border: 1px solid #cbd5e0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #ffffff;
+  text-align: center;
+}
+
+.progress-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+
+.progress-number {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.progress-unit {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+.progress-score {
+  border-left: 5px solid #38a169;
+}
+
+.progress-missed {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 0.375rem;
+  background: #f7fafc;
+}
+
+.progress-missed p {
+  margin: 0;
+}
+
+.progress-note {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+}

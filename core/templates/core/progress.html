@@ -1,0 +1,56 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Progress — AstroPulse{% endblock %}
+
+{% block content %}
+<section class="progress-page" aria-labelledby="progress-heading">
+  <h1 id="progress-heading">Progress</h1>
+
+  {% if crew is None %}
+    <p>No crew data available.</p>
+  {% else %}
+    <p class="progress-meta">Crew: <strong>{{ crew.name }}</strong></p>
+
+    <p class="progress-reassurance">
+      Your score rewards completing check-ins, never health outcomes.
+    </p>
+
+    <div class="progress-grid">
+      <div class="progress-card">
+        <h2>Current streak</h2>
+        <p class="progress-number">{{ current_streak }}</p>
+        <p class="progress-unit">day{{ current_streak|pluralize }}</p>
+      </div>
+
+      <div class="progress-card">
+        <h2>Longest streak</h2>
+        <p class="progress-number">{{ longest_streak }}</p>
+        <p class="progress-unit">day{{ longest_streak|pluralize }}</p>
+      </div>
+
+      <div class="progress-card">
+        <h2>This week</h2>
+        <p class="progress-number">{{ weekly_checkins }} / 7</p>
+        <p class="progress-unit">check-ins completed</p>
+      </div>
+
+      <div class="progress-card progress-score">
+        <h2>Weekly score</h2>
+        <p class="progress-number">{{ weekly_score }}</p>
+        <p class="progress-unit">from {{ weekly_checkins }} check-in{{ weekly_checkins|pluralize }} and {{ weekly_actions }} action{{ weekly_actions|pluralize }}</p>
+      </div>
+    </div>
+
+    {% if missed_today %}
+    <div class="progress-missed">
+      <p>No check-in yet today. <a href="{% url 'core:checkin' %}">Pick up where you left off</a>.</p>
+    </div>
+    {% endif %}
+
+    <div class="progress-note">
+      <p>Progress is stored on this device. It rewards showing up and logging the steps you choose to take.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -15,7 +15,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - [x] Stage 6: Sources and cited guidance
 - [x] Stage 7: Drift detection and forecasting
 - [x] Stage 8: Blackout mode and the relay summary
-- [ ] Stage 9: Actions and the progress view
+- [x] Stage 9: Actions and the progress view
 - [ ] Stage 10: Hardening, accessibility and the offline audit
 - [ ] Stage 11: Stretch, on-device language model rewording
 - [ ] Stage 12: Demo preparation
@@ -363,6 +363,40 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - `tests/test_smoke.py`: marked smoke tests with `@pytest.mark.django_db`
     because the new context processor touches the database.
   - Full suite: 160 passed, 1 xfailed.
+- Stage 9 complete (actions and the progress view):
+  - `core/models.py`: new `ActionLog` model (`date`, `indicator_key`,
+    `action_id`, `completed`, `completed_at`). Unique constraint on
+    `(crew_member, date, indicator_key, action_id)` so the same action cannot
+    be double-counted on the same day.
+  - `core/migrations/0004_actionlog.py`: migration for the new model.
+  - `core/services.py`: `log_action()` records a completed action and updates
+    the matching open `RelayItem.action_taken`; `progress_for()` returns
+    current streak, longest streak, weekly check-ins/7, and a weekly score.
+    The score is computed only from completed check-ins and logged actions;
+    health values and severities are never used. Point values are placeholders.
+  - `core/views.py`: `log_action_view` (HTMX-aware POST endpoint) and
+    `progress` view.
+  - `core/urls.py`: added `/action/log/` and `/progress/`.
+  - `core/templates/core/_guidance_card.html`: each `suggested_action` now has
+    a small "Done" HTMX form that logs the action and swaps the list item to a
+    disabled "Done" state. Card includes now receive `indicator_key` and `date`
+    from `_region_detail.html` and `_trend_chart.html`.
+  - `core/templates/core/_action_done.html`: HTMX swap partial for a completed
+    action.
+  - `core/templates/core/progress.html`: new page showing current streak,
+    longest streak, this-week check-ins/7, weekly score, the reassurance line
+    "Your score rewards completing check-ins, never health outcomes.", and
+    neutral "Pick up where you left off" copy for missed days.
+  - `core/templates/core/base.html`: added Progress link to main nav.
+  - `core/static/core/app.css`: action-button styles and progress card grid.
+  - `tests/test_progress.py`: 10 tests covering action logging, idempotency,
+    relay item action_taken update, progress rendering, streaks, identical
+    score for calm vs drift with same completion, reset after missed day,
+    neutral missed-day language, no health-based badges, and the reassurance
+    line.
+  - `tests/test_relay.py`: added test that logged actions appear in the relay
+    export.
+  - Full suite: 171 passed, 1 xfailed.
 
 ## Acceptance check
 
@@ -388,6 +422,12 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   contact-ground item, and the line "Decision support, not a diagnosis.
   Simulated demonstration data." The offline banner appears on every page
   while blackout is on and hides when it is toggled off.
+- Stage 9 acceptance (`seed_demo --scenario drift_day6 --reset`): the progress
+  page shows 7/7 weekly check-ins and the reassurance line. Logging a suggested
+  action from the guidance card updates `ActionLog` and the matching
+  `RelayItem.action_taken`; the action text then appears in `/relay/export/`.
+  `calm_week` and `drift_day6` produce the same weekly score when both have the
+  same number of completed check-ins and logged actions.
 
 ## Needs a source
 
@@ -489,5 +529,5 @@ and flip `verified` to `true` by hand after checking the page:
 1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
    (pending sign-off; findings by rule id). Includes the drift-guidance gate
    (`DRIFT_GUIDANCE_APPROVED`) which must be flipped after sign-off.
-2. Stage 9: Actions and the progress view.
+2. Stage 10: Hardening, accessibility and the offline audit.
 3. Polish: friendlier engine reason wording and per-indicator units in reasons.
