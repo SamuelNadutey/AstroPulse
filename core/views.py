@@ -12,9 +12,11 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from datetime import timedelta
 
 from core.forms import CheckInForm
 from core.models import CheckIn, CrewMember, Reading
+from core.charts import build_trend_figure, trend_summary
 from core.services import (
     REGION_LABELS,
     SEVERITY_GREEN,
@@ -22,10 +24,12 @@ from core.services import (
     SEVERITY_ORANGE,
     SEVERITY_RED,
     SEVERITY_YELLOW,
+    indicator_trend,
     load_indicators,
     region_statuses,
     run_status_for,
     worst_severity,
+    BASELINE_DAYS,
 )
 
 # Single local crew member for real (non-simulated) check-ins until the
@@ -228,10 +232,56 @@ def region_detail(request, region: str):
 
 
 def trend(request, indicator_key: str):
-    """Placeholder page for one indicator's trend (charts arrive in Stage 5)."""
+    """Trend page for one indicator: bundled Plotly chart + selector.
+
+    The figure is built by core.charts (engine baseline + limits only) and
+    embedded through json_script; Plotly.newPlot runs client-side against
+    the locally bundled Plotly script. No external data is fetched.
+    """
     config = next(
         (c for c in load_indicators() if c["key"] == indicator_key), None
     )
     if config is None:
         raise Http404(f"Unknown indicator: {indicator_key}")
-    return render(request, "core/trend.html", {"indicator": config})
+    crew = _current_crew()
+    date = _clean_date(request.GET.get("date"))
+    context = {
+        "indicator": config,
+        "date": date,
+        "indicators": load_indicators(),
+        "figure": None,
+        "summary": None,
+    }
+    if crew is not None:
+        data = indicator_trend(crew, indicator_key, date)
+        if data is not None:
+            figure = build_trend_figure(
+                data["indicator"],
+                data["readings"],
+                data["baseline"],
+                data["limits_entry"],
+            )
+            context["figure"] = figure
+            context["summary"] = trend_summary(
+                data["indicator"], data["readings"], data["baseline"]
+            )
+            context["readings"] = data["readings"]
+            context["is_simulated"] = any(
+                bool(getattr(r, "is_simulated", False))
+                for r in Reading.objects.filter(
+                    crew_member=crew, indicator_key=indicator_key,
+                    recorded_at__gte=date - timedelta(days=BASELINE_DAYS),
+                    recorded_at__lte=date,
+                )
+            )
+    if request.headers.get("HX-Request"):
+        return render(request, "core/_trend_chart.html", context)
+    return render(request, "core/trend.html", context)
+
+
+def trend_chart(request, indicator_key: str):
+    """HTMX partial: trend chart container for one indicator.
+
+    Swapped into #trend-container by the chart selector on /trend/<key>/.
+    """
+    return trend(request, indicator_key)

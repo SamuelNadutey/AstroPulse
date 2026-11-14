@@ -200,3 +200,37 @@ def region_statuses(entries: list[dict]) -> list[dict]:
             }
         )
     return regions
+
+
+def indicator_trend(crew_member, key, date):
+    """History + personal baseline for one indicator over the trend window.
+
+    Returns a dict with ``indicator`` (config), ``readings`` (list of
+    ``(recorded_at, value)`` oldest to newest), ``baseline`` (an
+    :class:`~engine.baseline.Baseline`) and ``limits_entry`` (from
+    ``data/limits.json`` or None).
+    """
+    config = next((c for c in load_indicators() if c["key"] == key), None)
+    if config is None:
+        return None
+    window_start = date - timedelta(days=BASELINE_DAYS)
+    readings = list(
+        Reading.objects.filter(
+            crew_member=crew_member,
+            indicator_key=key,
+            recorded_at__gte=window_start,
+            recorded_at__lte=date,
+        )
+        .order_by("recorded_at")
+        .values_list("recorded_at", "value")
+    )
+    history_values = [value for _, value in readings]
+    baseline = build_baseline(history_values)
+    limits_entry = load_limits().get(key)
+    return {
+        "indicator": config,
+        "readings": readings,
+        "baseline": baseline,
+        "limits_entry": limits_entry,
+    }
+

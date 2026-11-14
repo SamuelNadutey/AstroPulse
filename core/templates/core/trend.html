@@ -1,9 +1,57 @@
 {% extends "core/base.html" %}
 {% block title %}Trend — {{ indicator.label }}{% endblock %}
 {% block content %}
+{% load static %}
+{# Bundled Plotly only: no CDN, no external URLs. #}
+<script src="{% static 'vendor/plotly-basic.min.js' %}" defer></script>
+
 <h2>{{ indicator.label }} trend</h2>
 <p class="placeholder-note">
-  Trend charts arrive in the next build stage. Today's value for
-  {{ indicator.label }} is shown on the <a href="{% url 'core:status' %}">status dashboard</a>.
+  Personal thresholds are placeholders, not clinical values.
 </p>
+
+<form id="trend-selector" class="trend-selector">
+  <label for="trend-indicator">View trend for:</label>
+  <select id="trend-indicator" name="indicator">
+    {% for ind in indicators %}
+    <option value="{{ ind.key }}" {% if ind.key == indicator.key %}selected{% endif %}>
+      {{ ind.label }}
+    </option>
+    {% endfor %}
+  </select>
+</form>
+
+<div id="trend-container">
+  {% include "core/_trend_chart.html" %}
+</div>
+
+<script>
+  function renderTrend() {
+    const dataEl = document.getElementById("trend-figure-data");
+    const plotEl = document.getElementById("trend-plot");
+    if (!dataEl || !plotEl || typeof Plotly === "undefined") {
+      return;
+    }
+    const figure = JSON.parse(dataEl.textContent);
+    Plotly.newPlot("trend-plot", figure, {
+      displaylogo: false,
+      responsive: true,
+    });
+  }
+  renderTrend();
+  document.body.addEventListener("htmx:afterSwap", function (evt) {
+    if (evt.target && evt.target.id === "trend-container") {
+      renderTrend();
+    }
+  });
+  document
+    .getElementById("trend-indicator")
+    .addEventListener("change", function () {
+      const key = this.value;
+      htmx.get("/trend/" + key + "/chart/", {
+        target: "#trend-container",
+        swap: "innerHTML",
+      });
+    });
+</script>
 {% endblock %}

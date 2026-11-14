@@ -11,7 +11,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - [x] Stage 2: The status engine (baseline and severity)
 - [x] Stage 3: Check-in flow and environment profiles
 - [x] Stage 4: The body map and status dashboard
-- [ ] Stage 5: Trend charts
+- [x] Stage 5: Trend charts
 - [ ] Stage 6: Sources and cited guidance
 - [ ] Stage 7: Drift detection and forecasting
 - [ ] Stage 8: Blackout mode and the relay summary
@@ -204,6 +204,44 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   mood shows "4.34 / 5" (scale separate from value); region labels are
   14px for legibility; SIMULATED badge moved to sit beside each
   indicator name.
+- Stage 5 complete (trend charts with bundled Plotly):
+  - `core/charts.py`: `build_trend_figure(indicator, readings, baseline,
+    limits_entry)` returns a JSON-serialisable Plotly figure dict. Shows
+    readings as a line-with-markers trace, a personal-baseline band
+    (median +/- 2 spreads, spread computed from engine `build_baseline`
+    median/MAD and `engine.scoring._MAD_SCALE`), horizontal dotted lines
+    for sourced limits (yellow/orange/red), and a placeholder "Forecast
+    (Stage 7)" trace. `trend_summary()` renders a plain-text summary for
+    accessibility. All numbers are placeholders, not clinical values.
+  - `core/views.py`: `trend()` renders `/trend/<indicator_key>/` with the
+    figure embedded via `json_script`; `trend_chart()` is an HTMX partial
+    (`/trend/<indicator_key>/chart/`) swapped into `#trend-container` by
+    the chart selector. No external data is fetched.
+  - `core/urls.py`: added `/trend/<indicator_key>/chart/` endpoint.
+  - `core/templates/core/trend.html`: chart page loads Plotly from
+    `core/static/vendor/plotly-basic.min.js` only, calls `Plotly.newPlot`
+    with `displaylogo: false`, has an indicator `<select>` HTMX chart
+    selector, and a data-table fallback inside `<details>`.
+  - `core/templates/core/_trend_chart.html`: partial with `json_script`,
+    `#trend-plot`, text summary, and data table.
+  - `core/static/core/app.css`: trend selector, plot sizing, summary and
+    data-table styles.
+  - `tests/test_charts.py`: 9 tests — readings trace present, baseline
+    band uses engine median/MAD, limit lines render, page loads with
+    bundled Plotly only (no external URLs), HTMX partial works, summary
+    text, 404 for unknown indicators, and drift_day6 resting HR drift is
+    visible.
+  - Full suite: 79 tests passing.
+
+## Acceptance check
+
+- `seed_demo --scenario drift_day6`, then `/trend/resting_hr/` (verified
+  against a live dev server): the chart shows resting heart rate rising
+  from 64.66 to 82.93 bpm over the 14-day window against a baseline band
+  of median 74.7 +/- ~8.5 spreads, so the drift away from the baseline
+  is obvious. The plain-text summary reads "Resting heart rate rose from
+  64.66 to 82.93 bpm. Your baseline median is 74.7 bpm." No external URLs
+  appear in the HTML.
 
 ## Needs a source
 
@@ -216,7 +254,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 
 ## Next
 
-1. Stage 5 (build plan): trend charts (Plotly, bundled; replace the
-   /trend/ placeholder pages).
-2. Stage 6: replace placeholder limits with sourced values (see above).
+1. Stage 6 (build plan): replace placeholder limits with sourced values.
+2. Stage 7: drift detection and forecasting (CUSUM + forecast band on the
+   trend charts).
 3. Polish: friendlier engine reason wording and per-indicator units in reasons.

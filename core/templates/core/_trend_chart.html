@@ -1,0 +1,18 @@
+{{ figure|json_script:"trend-figure-data" }}
+<div id="trend-plot"></div>
+{% if summary %}
+<p class="trend-summary">{{ summary }}</p>
+{% endif %}
+<details class="trend-table">
+  <summary>Show data table</summary>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>{{ indicator.unit }}</th></tr>
+    </thead>
+    <tbody>
+      {% for d, v in readings %}
+      <tr><td>{{ d }}</td><td>{{ v }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</details>

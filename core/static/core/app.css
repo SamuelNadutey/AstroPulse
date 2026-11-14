@@ -281,3 +281,78 @@ body {
   font-size: 0.875rem;
   color: #2b6cb0;
 }
+
+/* Trend chart styles. */
+.trend-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.trend-selector label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.trend-selector select {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+#trend-plot {
+  width: 100%;
+  max-width: 700px;
+  height: 320px;
+  margin: 0 auto 1rem;
+}
+
+.trend-summary {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+}
+
+.trend-table {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.trend-table summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #2b6cb0;
+  outline: none;
+}
+
+.trend-table summary::-webkit-details-marker {
+  display: none;
+}
+
+.trend-table summary::after {
+  content: " \25BC";
+  font-size: 0.8rem;
+}
+
+.trend-table[open] summary::after {
+  content: " \25B2";
+}
+
+.trend-table table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.trend-table th,
+.trend-table td {
+  border: 1px solid #cbd5e0;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+}
+
+.trend-table th {
+  background: #edf2f7;
+  font-weight: 600;
+}

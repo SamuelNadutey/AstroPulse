@@ -12,4 +12,5 @@ urlpatterns = [
     path("status/", views.status, name="status"),
     path("region/<str:region>/", views.region_detail, name="region_detail"),
     path("trend/<str:indicator_key>/", views.trend, name="trend"),
+    path("trend/<str:indicator_key>/chart/", views.trend_chart, name="trend_chart"),
 ]
