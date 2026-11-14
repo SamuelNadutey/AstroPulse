@@ -368,23 +368,23 @@ body {
 }
 
 .guidance-card.sev-green {
-  border-left-color: var(--sev-green);
+  border-left-color: var(--sev-green-fill);
 }
 
 .guidance-card.sev-yellow {
-  border-left-color: var(--sev-yellow);
+  border-left-color: var(--sev-yellow-fill);
 }
 
 .guidance-card.sev-orange {
-  border-left-color: var(--sev-orange);
+  border-left-color: var(--sev-orange-fill);
 }
 
 .guidance-card.sev-red {
-  border-left-color: var(--sev-red);
+  border-left-color: var(--sev-red-fill);
 }
 
 .guidance-card.sev-gray {
-  border-left-color: var(--sev-gray);
+  border-left-color: var(--sev-gray-fill);
 }
 
 .gc-section {
@@ -592,15 +592,15 @@ body {
 }
 
 .relay-card.severity-orange {
-  border-left-color: var(--sev-orange);
+  border-left-color: var(--sev-orange-fill);
 }
 
 .relay-card.severity-red {
-  border-left-color: var(--sev-red);
+  border-left-color: var(--sev-red-fill);
 }
 
 .relay-card.severity-yellow {
-  border-left-color: var(--sev-yellow);
+  border-left-color: var(--sev-yellow-fill);
 }
 
 .relay-date,
