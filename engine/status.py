@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from math import isfinite, isinf, isnan
 
 from engine.baseline import DEFAULT_WINDOW, Baseline, build_baseline
+from engine.drift import detect_series_drift
 from engine.limits import check_limits
 from engine.scoring import signed_bad_z
 
@@ -77,6 +78,8 @@ class StatusResult:
         baseline: The :class:`~engine.baseline.Baseline` used (its
             ``enough_data`` flag says whether a personal severity is valid).
         reasons: Plain-English explanation strings.
+        drift: ``True`` when the slow-drift CUSUM flags a sustained shift. A
+            drift flag raises the severity to at least yellow, never red.
     """
 
     severity: str
@@ -85,6 +88,7 @@ class StatusResult:
     z: float | None
     baseline: Baseline
     reasons: list[str] = field(default_factory=list)
+    drift: bool = False
 
 
 def _rank(severity: str | None) -> int:
@@ -150,11 +154,27 @@ def _limit_reason(indicator_key: str, severity: str, limits: Mapping) -> str:
     return f"{relation} the {label} limit of {threshold} (see source)."
 
 
+def _clean_series(values, indicator: Indicator) -> list[float]:
+    """Return every valid reading in ``values``, oldest to newest.
+
+    Used for the longer drift history; a non-sequence yields no readings.
+    """
+    if values is None or isinstance(values, (str, bytes, bytearray)):
+        return []
+    try:
+        items = list(values)
+    except TypeError:
+        return []
+    cleaned = [_to_valid(raw, indicator) for raw in items]
+    return [v for v in cleaned if v is not None]
+
+
 def evaluate(
     indicator: Indicator,
     history_values,
     new_value,
     limits: Mapping,
+    long_history=None,
 ) -> StatusResult:
     """Evaluate ``new_value`` for ``indicator`` against personal + absolute limits.
 
@@ -259,6 +279,18 @@ def evaluate(
         reasons.append(_limit_reason(indicator.key, limit_severity, limits))
 
     severity = _worse(personal_severity, limit_severity) or SEVERITY_GRAY
+
+    drifting = False
+    if long_history is not None:
+        series = _clean_series(long_history, indicator) + [value]
+        drift = detect_series_drift(
+            series, indicator.bad_direction, indicator.mad_floor
+        )
+        if drift.drifting:
+            drifting = True
+            reasons.append(f"{indicator.name} has drifted: {drift.reason}")
+            severity = _worse(severity, SEVERITY_YELLOW)
+
     return StatusResult(
         severity=severity,
         personal_severity=personal_severity,
@@ -266,4 +298,5 @@ def evaluate(
         z=z,
         baseline=baseline,
         reasons=reasons,
+        drift=drifting,
     )

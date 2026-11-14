@@ -8,7 +8,7 @@
     "input_type": "device",
     "min_valid": 30,
     "max_valid": 200,
-    "mad_floor": 2.0,
+    "mad_floor": 3.0,
     "normal_center": 62.0,
     "normal_wobble": 3.0
   },
@@ -60,7 +60,7 @@
     "input_type": "self-report",
     "min_valid": 0,
     "max_valid": 180,
-    "mad_floor": 5.0,
+    "mad_floor": 8.0,
     "normal_center": 45.0,
     "normal_wobble": 8.0
   },

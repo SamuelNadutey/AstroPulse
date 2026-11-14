@@ -13,7 +13,7 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
 - [x] Stage 4: The body map and status dashboard
 - [x] Stage 5: Trend charts
 - [x] Stage 6: Sources and cited guidance
-- [ ] Stage 7: Drift detection and forecasting
+- [x] Stage 7: Drift detection and forecasting
 - [ ] Stage 8: Blackout mode and the relay summary
 - [ ] Stage 9: Actions and the progress view
 - [ ] Stage 10: Hardening, accessibility and the offline audit
@@ -131,7 +131,8 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - Region panels show reasons and per-indicator trend links; SIMULATED
     badges appear on the banner and simulated rows.
   - Severity is still not monotonically rising over time (Stage 2 known
-    issue); the Stage 7 CUSUM remains the planned fix for slow drift.
+    issue); the Stage 7 CUSUM is the fix for slow drift (see the Stage 7
+    acceptance note above).
 
 ## Decisions
 
@@ -186,8 +187,16 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   passes one value per day, oldest to newest.
 - `drift_day6` (resting_hr, seed 42): personal-baseline severity spikes at day 6
   then fluctuates and adapts (baseline median rises), so it is not monotonically
-  rising over time; absolute drift vs. adaptive baseline needs care in UI/reasoning.
-  The Stage 7 CUSUM is the planned mechanism for slow drift.
+  rising over time. The Stage 7 drift CUSUM now keeps the indicator yellow even
+  when the adaptive baseline reads green, but the overall trend is still not
+  monotonic by design.
+- Drift tuning tradeoff: `DEFAULT_K=1.0` and `DEFAULT_H=7.0` were tuned so
+  `calm_week` never drifts across the required 20 seeds, which gives roughly a
+  week of latency on the gradual drift (resting_hr flags day 13, sleep day 12).
+  Beyond 20 seeds, `exercise_min` (the noisiest indicator, wobble 8 on a centre
+  of 45) is the main source of occasional false drift; tightening k/h further
+  would break the "yellow before extreme" story, so this is a deliberate,
+  documented tradeoff (yellow is a low-risk "watch" prompt).
 - `mood` renders as a 1-5 select; garbage input surfaces Django's default
   "Select a valid choice" text alongside the friendly invalid message.
 - Severity reason wording from the engine ("is 6.0 spreads above your usual
@@ -280,6 +289,41 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
     orange, contact-ground prominence at red, gray message, green
     reassurance, plain-text sources, and accessible headings.
   - Full suite: 120 passed, 1 xfailed.
+- Stage 7 complete (drift detection and forecasting, pure Python + NumPy):
+  - `engine/drift.py`: `detect_drift(history_values, baseline, bad_direction,
+    k=1.0, h=7.0)` runs a one-sided CUSUM on the signed robust z-scores of
+    readings after a reference period. A per-reading cap (Z_CAP=3.5) stops a
+    single outlier from tripping drift. `detect_series_drift` splits a series
+    into a 5-point reference and a test period. Returns a `DriftResult` with
+    `drifting`, `days_in_drift`, `started_on_index` and a plain-English reason
+    such as "5 days above your usual range.".
+  - `engine/forecast.py`: `forecast(history_values, horizon=5, window=10)`
+    fits a line with `numpy.polyfit` on the last window points and projects
+    3 to 7 days with a band from the residual standard deviation widened by
+    the prediction-interval leverage term. Returns `None` below 5 points. The
+    docstring states the band is a rough indication, not a guarantee.
+  - `engine/status.py`: `StatusResult` gains a `drift` flag; `evaluate` takes
+    an optional `long_history` and runs the CUSUM. A drift flag raises the
+    final severity to at least yellow but never red, and appends a reason.
+  - `core/services.py`: `run_status_for` loads a 28-day `DRIFT_LOOKBACK_DAYS`
+    history for drift; personal severity still uses the 14-day window.
+  - `core/charts.py`: the "Forecast (Stage 7)" placeholder is replaced by a
+    dashed projected line and a shaded band labeled "Forecast (uncertain)".
+  - `core/guidance.py`: drift guidance stays gated behind
+    `DRIFT_GUIDANCE_APPROVED = False` until the safety owner signs off; a
+    yellow drift flag currently shows the normal yellow rule.
+  - `data/indicators.json`: corrected two placeholder MAD floors so z-scores
+    are honest — `resting_hr` 2.0 -> 3.0 and `exercise_min` 5.0 -> 8.0 (both
+    had been below the simulator's `normal_wobble`, inflating z and causing
+    false drift).
+  - `tests/test_drift.py` (13) and `tests/test_forecast.py` (8): single
+    outlier never drifts, sustained shift drifts with direction-aware reason,
+    drift_day6 flags resting_hr and sleep_hours within a week, calm_week never
+    drifts across 20 seeds, forecast accuracy and band-width behaviour,
+    fewer-than-5 points returns None, horizon bounds.
+  - `tests/test_bodymap.py`: added the acceptance test that day 21 chest is
+    yellow from drift (the adaptive baseline would otherwise show green).
+  - Full suite: 148 passed, 1 xfailed.
 
 ## Acceptance check
 
@@ -290,6 +334,13 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   is obvious. The plain-text summary reads "Resting heart rate rose from
   64.66 to 82.93 bpm. Your baseline median is 74.7 bpm." No external URLs
   appear in the HTML.
+- Stage 7 acceptance (`seed_demo --scenario drift_day6`): the drift CUSUM
+  flags resting_hr on day 13 and sleep_hours on day 12, so the dashboard
+  shows yellow while the individual readings are still moderate, before they
+  turn orange/red at day 14. By day 21 the adaptive baseline has absorbed the
+  heart-rate rise (personal severity green), but drift keeps chest yellow —
+  the story the detector exists to tell. `calm_week` never drifts across 20
+  seeds and all six indicators.
 
 ## Needs a source
 
@@ -389,7 +440,7 @@ and flip `verified` to `true` by hand after checking the page:
 ## Next
 
 1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
-   (pending sign-off; findings by rule id, no wording changed yet).
-2. Stage 7 (build plan): drift detection and forecasting (CUSUM + forecast band on the trend charts).
-3. Polish: friendlier engine reason wording and per-indicator units in reasons.
-4. Stage 8: Blackout mode and the relay summary.
+   (pending sign-off; findings by rule id). Includes the drift-guidance gate
+   (`DRIFT_GUIDANCE_APPROVED`) which must be flipped after sign-off.
+2. Polish: friendlier engine reason wording and per-indicator units in reasons.
+3. Stage 8: Blackout mode and the relay summary.

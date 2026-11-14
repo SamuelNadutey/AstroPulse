@@ -187,6 +187,21 @@ def test_drift_day6_chest_and_head_escalate_with_reasons():
     assert "Below the critical limit of 4" in head_content
 
 
+def test_drift_day6_day21_chest_is_yellow_from_drift():
+    # By day 21 the adaptive 14-day baseline has absorbed the resting-heart
+    # rate drift (personal severity green), but the drift CUSUM flags the slow
+    # rise and lifts chest to yellow. This is the story the drift detector
+    # exists to tell: a sustained shift that single readings miss.
+    call_command("seed_demo", scenario="drift_day6", reset=True)
+    client = Client()
+    page = client.get("/status/")
+    assert 'aria-label="Chest — Watch (yellow)"' in page.content.decode()
+    chest = client.get("/region/chest/")
+    chest_content = chest.content.decode()
+    assert "drifted" in chest_content
+    assert "days above your usual range" in chest_content
+
+
 def test_invalid_and_future_dates_fall_back_to_today():
     call_command("seed_demo", scenario="drift_day6", reset=True)
     client = Client()

@@ -22,6 +22,11 @@ from engine.status import (
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
+# Drift guidance has not been signed off by the safety owner
+# (docs/GUIDANCE_REVIEW.md). While False, a yellow drift flag shows the normal
+# yellow rule. Set to True only after sign-off.
+DRIFT_GUIDANCE_APPROVED = False
+
 
 @dataclass(frozen=True)
 class GuidanceResult:
@@ -137,7 +142,7 @@ def select_guidance(status_result) -> GuidanceResult | None:
         raise ValueError("status_result has no indicator key")
 
     rules = load_guidance()
-    is_drift = bool(getattr(status_result, "drift", False))
+    is_drift = bool(getattr(status_result, "drift", False)) and DRIFT_GUIDANCE_APPROVED
 
     if severity == SEVERITY_YELLOW and is_drift:
         for rule in rules:

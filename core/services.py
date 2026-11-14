@@ -31,6 +31,10 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 # the history at 14 entries (engine.baseline.DEFAULT_WINDOW).
 BASELINE_DAYS = 14
 
+# Placeholder lookback for the drift check: the reference period plus the
+# CUSUM test period. Personal severity still uses BASELINE_DAYS.
+DRIFT_LOOKBACK_DAYS = 28
+
 # Body regions for the map (body_region values in data/indicators.json).
 # Region labels are plain UI copy, not clinical terms.
 REGION_LABELS = {
@@ -127,19 +131,22 @@ def run_status_for(crew_member, date) -> list[dict]:
     """
     limits = load_limits()
     window_start = date - timedelta(days=BASELINE_DAYS)
+    drift_start = date - timedelta(days=DRIFT_LOOKBACK_DAYS)
     entries: list[dict] = []
     for config in load_indicators():
         key = config["key"]
-        history = list(
+        long_rows = list(
             Reading.objects.filter(
                 crew_member=crew_member,
                 indicator_key=key,
-                recorded_at__gte=window_start,
+                recorded_at__gte=drift_start,
                 recorded_at__lt=date,
             )
             .order_by("recorded_at")
-            .values_list("value", flat=True)
+            .values_list("recorded_at", "value")
         )
+        long_history = [value for _, value in long_rows]
+        history = [value for day, value in long_rows if day >= window_start]
         today = Reading.objects.filter(
             crew_member=crew_member,
             indicator_key=key,
@@ -157,7 +164,13 @@ def run_status_for(crew_member, date) -> list[dict]:
             value = None
         else:
             value = today.value
-            result = evaluate(_engine_indicator(config), history, value, limits)
+            result = evaluate(
+                _engine_indicator(config),
+                history,
+                value,
+                limits,
+                long_history=long_history,
+            )
         entries.append(
             {
                 "key": key,

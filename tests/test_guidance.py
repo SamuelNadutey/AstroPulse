@@ -5,7 +5,13 @@ import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-from core.guidance import GuidanceResult, load_guidance, load_sources, select_guidance
+from core.guidance import (
+    DRIFT_GUIDANCE_APPROVED,
+    GuidanceResult,
+    load_guidance,
+    load_sources,
+    select_guidance,
+)
 from core.validation import (
     GuidanceValidationError,
     collect_errors,
@@ -248,9 +254,16 @@ def test_select_guidance_returns_rule_for_each_severity(severity):
         assert result.trigger.get("severity") == severity
 
 
-def test_select_guidance_yellow_with_drift_returns_drift_rule():
+def test_select_guidance_yellow_with_drift_returns_drift_rule_once_approved(monkeypatch):
+    monkeypatch.setattr("core.guidance.DRIFT_GUIDANCE_APPROVED", True)
     result = select_guidance(_make_status("resting_hr", SEVERITY_YELLOW, drift=True))
     assert result.id == "resting_hr.drift"
+
+
+def test_select_guidance_yellow_drift_uses_yellow_rule_until_approved():
+    assert DRIFT_GUIDANCE_APPROVED is False
+    result = select_guidance(_make_status("resting_hr", SEVERITY_YELLOW, drift=True))
+    assert result.id == "resting_hr.yellow"
 
 
 def test_select_guidance_yellow_without_drift_returns_yellow_rule():

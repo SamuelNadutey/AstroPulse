@@ -9,10 +9,11 @@ value (AGENTS.md hard rule 6).
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from math import isfinite
 
 from engine.baseline import Baseline
+from engine.forecast import forecast
 from engine.scoring import _MAD_SCALE
 
 # Number of recent days shown on a trend chart (placeholder).
@@ -58,6 +59,54 @@ def trend_summary(indicator, readings, baseline):
     if baseline is not None and baseline.enough_data and baseline.median is not None:
         parts.append(f" Your baseline median is {baseline.median:.1f} {unit}.")
     return " ".join(parts)
+
+
+def _forecast_traces(readings):
+    """Dashed projected line and shaded band; empty when no forecast exists.
+
+    The forecast is a rough indication (see engine.forecast), labeled as such.
+    """
+    if not readings:
+        return []
+    raw_values = [float(v) for _, v in readings]
+    projection = forecast(raw_values)
+    if projection is None:
+        return []
+    last_date = readings[-1][0]
+    x = [_clean(last_date)] + [
+        _clean(last_date + timedelta(days=d)) for d in projection.days
+    ]
+    last_value = raw_values[-1]
+    line_y = [last_value] + list(projection.values)
+    lower_y = [last_value] + list(projection.lower)
+    upper_y = [last_value] + list(projection.upper)
+    return [
+        {
+            "x": x,
+            "y": lower_y,
+            "mode": "lines",
+            "line": {"width": 0},
+            "showlegend": False,
+            "hoverinfo": "skip",
+        },
+        {
+            "x": x,
+            "y": upper_y,
+            "mode": "lines",
+            "line": {"width": 0},
+            "fill": "tonexty",
+            "fillcolor": "rgba(31, 119, 180, 0.15)",
+            "showlegend": False,
+            "hoverinfo": "skip",
+        },
+        {
+            "x": x,
+            "y": line_y,
+            "mode": "lines",
+            "line": {"dash": "dash", "width": 2, "color": "#1f77b4"},
+            "name": "Forecast (uncertain)",
+        },
+    ]
 
 
 def build_trend_figure(indicator, readings, baseline, limits_entry=None):
@@ -131,19 +180,7 @@ def build_trend_figure(indicator, readings, baseline, limits_entry=None):
             }
         )
 
-    # Forecast placeholder reserved for Stage 7.
-    tail_dates = dates[-2:] if len(dates) >= 2 else dates
-    tail_values = values[-2:] if len(values) >= 2 else values
-    traces.append(
-        {
-            "x": tail_dates,
-            "y": tail_values,
-            "mode": "lines",
-            "line": {"dash": "dot"},
-            "name": "Forecast (Stage 7)",
-            "visible": "legendonly",
-        }
-    )
+    traces.extend(_forecast_traces(readings))
 
     layout = {
         "title": {"text": f"{label} trend", "x": 0.5},
