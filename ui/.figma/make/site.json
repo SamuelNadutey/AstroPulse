@@ -1,0 +1,10 @@
+{
+  "description": "Offline-first health monitoring app for astronauts to track vital signs, sleep, mood, and exercise during space missions. Identifies health changes, provides guidance, and records concerns for ground support communication.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

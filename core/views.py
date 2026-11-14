@@ -142,8 +142,12 @@ def _guidance_for(status_result, indicator_key):
 
 
 def home(request):
-    """Home page placeholder: confirms the Django project is running."""
-    return render(request, "core/home.html")
+    """Dashboard entry point.
+
+    Renders the same dashboard as /status/ so the app opens on the body map
+    instead of a placeholder page. Both URLs stay available.
+    """
+    return status(request)
 
 
 def checkin(request):

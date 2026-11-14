@@ -20,3 +20,7 @@ htmlcov/
 Thumbs.db
 .idea/
 .vscode/
+
+# UI prototype (read-only design reference; never built or served)
+ui/node_modules/
+ui/dist/

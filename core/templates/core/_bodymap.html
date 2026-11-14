@@ -1,3 +1,4 @@
+<svg id="bodymap" class="bodymap" viewBox="0 0 240 200" role="group" aria-label="Body map. Select a region for details.">
 {% for region in regions %}
 <g id="bm-{{ region.name }}"
    class="bm-region sev-{{ region.severity }}"
@@ -28,3 +29,4 @@
   {% endif %}
 </g>
 {% endfor %}
+</svg>

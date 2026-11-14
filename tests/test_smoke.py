@@ -12,9 +12,11 @@ def test_home_returns_200(client):
 
 
 @pytest.mark.django_db
-def test_home_shows_running_message(client):
+def test_home_shows_the_dashboard(client):
+    # / is the dashboard entry point (same view as /status/).
     response = client.get(reverse("core:home"))
-    assert b"AstroPulse is running" in response.content
+    assert b"Dashboard" in response.content
+    assert b"No data yet" in response.content
 
 
 @pytest.mark.django_db

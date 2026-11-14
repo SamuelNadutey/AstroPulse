@@ -454,6 +454,90 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - No application-code changes were required: the tests passed on the
     current codebase as-is. One demonstration was run (see Acceptance check).
   - Full suite: 265 passed, 1 xfailed.
+- UI port Phase 1 complete (Django-native port of the Figma Make prototype;
+  no React, no Tailwind, no Node toolchain in the main project):
+  - `ui/` stays a read-only design reference. `ui/node_modules/` and
+    `ui/dist/` are now gitignored; `pytest.ini` already limits collection to
+    `tests/`, so the prototype is never tested or served.
+  - `core/static/core/theme.css`: design tokens ported from the prototype
+    `:root` (spacing, type scale, surfaces, ink, brand, motion) plus the app
+    shell (topbar, sidebar, page frame, cards, badges, 3D panel). No
+    `@import`, no `url()`, no web fonts, no external URLs. Loaded after
+    `app.css` so it can style the shell without touching component rules.
+  - `core/templates/core/base.html`: topbar (brand, local-only status,
+    SIMULATED badge, blackout toggle), sidebar navigation (Dashboard,
+    Check-in, Trends, Relay, Progress with `aria-current`), skip link,
+    `<main>` landmark, and the permanent footer "Decision support, not a
+    diagnosis." on every page.
+  - `/` now renders the dashboard (the `home` view delegates to `status`), so
+    the app opens on the body map. `/status/` still works. The smoke test was
+    updated to assert the dashboard instead of the old "is running" message.
+  - `core/templates/core/_bodymap.html`: fixed a real defect - the focusable
+    `<g>` region groups had no `<svg>` parent, so the map never rendered.
+    Now wrapped in `<svg id="bodymap" viewBox="0 0 240 200">`; the region
+    ids, `role="button"`, `tabindex="0"`, aria-labels and the HTMX ENTER
+    trigger are unchanged.
+  - `core/templates/core/status.html`: dashboard card layout (overall banner,
+    body map card with the "3D view" toggle, region detail, indicator cards).
+  - Three.js 0.187.0 copied from `ui/node_modules/three` into
+    `core/static/vendor/three/` (build/three.module.js, build/three.core.js,
+    GLTFLoader, OrbitControls, BufferGeometryUtils, SkeletonUtils, LICENSE).
+    `SkeletonUtils` is required by GLTFLoader; the package layout is mirrored
+    so its relative imports resolve. No downloads, no CDN.
+  - `core/static/core/models/astropulse_body.glb` copied from
+    `ui/public/models/` (773 KB).
+  - `core/static/core/js/body3d.js`: lazy ES module loaded only on the
+    dashboard. Builds the prototype scene (camera, OrbitControls, lights,
+    region hit spheres + severity rings), loads the local .glb, and projects
+    region labels as icon + text + colour buttons. Toggling off disposes the
+    renderer, controls, geometries, materials and textures. WebGL or model
+    failure falls back to the SVG map with a spoken message. Respects
+    `prefers-reduced-motion`. Block comments only, because the offline test
+    treats a double slash plus a letter as a protocol-relative URL.
+  - `core/templates/core/status.html`: page-scoped import map maps `three`
+    and `three/addons/` to local `{% static %}` paths; the 3D container starts
+    `hidden` and the SVG map is the default view.
+  - `core/static/core/app.css`: the old base/shell block moved to theme.css;
+    component rules are unchanged.
+  - `tests/test_dashboard_shell.py` (13 tests): offline-only theme.css, shell
+    on every page, five nav links, `aria-current`, dashboard entry point,
+    focusable SVG body map, opt-in local 3D, no Three.js on other pages,
+    CSS load order, a single `<main>` with a working skip link, a visible
+    body-map focus ring, a single severity-palette source, and exactly one
+    `<h1>` per full page.
+  - `tests/test_body3d.py` (7 tests): vendored files present and non-trivial,
+    license kept, staticfiles resolves the local assets, no network calls in
+    body3d.js, disposal/fallback code present, SVG default, import map has no
+    external targets.
+  - `tests/test_app_css.py`: undefined-variable check now spans theme.css and
+    app.css.
+  - Follow-up fixes (dead code and fallbacks):
+    - Deleted the unused `core/templates/core/home.html` now that `/` renders
+      the dashboard.
+    - Promoted the dashboard, check-in and trend page titles to `<h1>` so
+      every full page has exactly one top-level heading.
+    - `body3d.js`: a failed .glb load now tears the scene down and restores
+      the SVG map (previously it left an empty viewport), and the unused
+      fallback element was removed.
+    - Removed the now-unused `.status-banner` and `.body3d-fallback` CSS.
+  - Full suite: 289 passed, 1 xfailed.
+  - Verification: `manage.py check` clean; `runserver` served the dashboard
+    with 200 and every vendored asset with 200 and the right MIME type (CSS,
+    JS, glTF binary); `node --check` passed on body3d.js; `node` loaded the
+    vendored Three.js build (REVISION 187).
+- UI port Phase 1 known issues:
+  - The 3D WebGL render is not exercised by an automated browser test (the
+    project has no Playwright/Puppeteer). It is verified by a JS syntax check,
+    a Node import of the vendored Three.js build (REVISION 187), and local
+    static serving. A real-browser airplane-mode check is still required.
+  - `theme.css` loads after `app.css` (later file wins) so the shell can style
+    shared classes such as `.status-row` and `.badge-simulated`.
+  - `body3d.js` repeats the prototype's region coordinates as layout data
+    (positions, not clinical values).
+  - The nav "Trends" link deep-links to `/trend/resting_hr/` until a trend
+    index page exists; every trend page therefore shows Trends as current.
+  - Independent review (MiMo-V2.6-Flash) findings are resolved and recorded in
+    the Phase 1 entry above.
 
 ## Acceptance check
 
@@ -591,9 +675,15 @@ and flip `verified` to `true` by hand after checking the page:
 
 ## Next
 
-1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
+1. Manual browser check in airplane mode: load `/`, toggle "3D view", orbit
+   the model, select a region, toggle back, and confirm the SVG map returns
+   and no network request leaves the machine.
+2. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
    (pending sign-off; findings by rule id). Includes the drift-guidance gate
    (`DRIFT_GUIDANCE_APPROVED`) which must be flipped after sign-off.
-2. Stage 10 remainder: accessibility and the offline audit (safety tests are
+3. Stage 10 remainder: accessibility and the offline audit (safety tests are
    done; see docs/PROGRESS.md "Stage 10 progress").
-3. Polish: friendlier engine reason wording and per-indicator units in reasons.
+4. UI port Phase 2: Check-in page against the prototype layout, then Trends
+   (Plotly), Relay and Progress. The Progress port must fix the prototype's
+   corrupted glyphs.
+5. Polish: friendlier engine reason wording and per-indicator units in reasons.

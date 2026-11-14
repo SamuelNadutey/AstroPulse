@@ -1,11 +1,30 @@
 {% extends "core/base.html" %}
-{% block title %}Status{% endblock %}
+{% load static %}
+{% block title %}Dashboard · AstroPulse{% endblock %}
+
+{% block extra_head %}
+{# Local import map for the optional 3D view; no network, no CDN. #}
+<script type="importmap">
+{
+  "imports": {
+    "three": "{% static 'vendor/three/build/three.module.js' %}",
+    "three/addons/": "{% static 'vendor/three/examples/jsm/' %}"
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
-<h2>Status{% if date %} — {{ date }}{% endif %}</h2>
+<div class="page-head">
+  <h1 class="page-title">Dashboard</h1>
+  {% if date %}<p class="page-meta">{{ date }}</p>{% endif %}
+</div>
+
 {% if crew is None %}
 <p>No data yet. Complete a <a href="{% url 'core:checkin' %}">daily check-in</a> first.</p>
 {% else %}
 <p class="placeholder-note">For {{ crew }}. Personal thresholds are placeholders, not clinical values.</p>
+
 <div class="overall-banner sev-{{ overall.severity }}" role="status">
   <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=overall.shape only %}</span>
   <strong class="overall-word">{{ overall.word }}</strong>
@@ -14,7 +33,18 @@
 </div>
 
 <div class="dashboard">
-  <section class="dashboard-map" aria-label="Body map">
+  <section class="dashboard-map" aria-labelledby="bodymap-title">
+    <div class="card-head">
+      <h3 class="card-title" id="bodymap-title">Body map</h3>
+      <button
+        type="button"
+        class="view-toggle"
+        id="view-toggle-3d"
+        aria-pressed="false"
+        data-view-toggle
+        hidden
+      >3D view</button>
+    </div>
     {% include "core/_bodymap.html" %}
     <ul class="bm-legend" aria-label="Severity legend">
       {% for item in legend %}
@@ -24,6 +54,13 @@
       </li>
       {% endfor %}
     </ul>
+    <div
+      id="body3d"
+      class="body3d-shell"
+      hidden
+      data-model-url="{% static 'core/models/astropulse_body.glb' %}"
+    ></div>
+    <p id="view3d-status" class="visually-hidden" role="status" aria-live="polite"></p>
   </section>
   <section class="dashboard-panel" aria-label="Region detail">
     <div id="region-panel">
@@ -54,4 +91,8 @@
   {% endfor %}
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if crew %}<script type="module" src="{% static 'core/js/body3d.js' %}"></script>{% endif %}
 {% endblock %}
