@@ -397,6 +397,44 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   - `tests/test_relay.py`: added test that logged actions appear in the relay
     export.
   - Full suite: 171 passed, 1 xfailed.
+- Stage 10 progress (project-wide safety tests; accessibility audit pending):
+  - `tests/test_no_external_urls.py`: scans every file in `core/templates`
+    and `core/static` for `http://`, `https://` and protocol-relative `//`
+    references (in `src`, `href`, `action`, `url()`, `@import`, `fetch(` or
+    anywhere else). Literal URLs are allowed only as plain displayed text in
+    the citation partial (`_guidance_card.html`) on lines with no loader
+    usage. The bundled vendor libraries under `core/static/vendor/` are
+    exempt from the literal-URL check: they are third-party minified
+    artifacts whose URLs occur only as XML namespace/DTD identifier strings
+    (never fetched) and internal JS constants; they cannot be edited without
+    invalidating the vendored artifact. The exemption is documented in the
+    test docstring; templates must reference vendor files via
+    `{% static 'vendor/...' %}` (enforced separately). Failures list every
+    offending file and line number.
+  - `tests/test_every_page.py`: requests every full URL (home, check-in,
+    status, progress, relay, all six `/trend/<key>/` pages) for each of the
+    four seeded scenarios and asserts 200, the footer line and the SIMULATED
+    badge. HTMX partials (`/checkin/fields/`, `/region/<name>/` and the trend
+    chart partials' parent pages) are asserted for 200; region partials also
+    assert the SIMULATED badge. `/relay/export/` is asserted separately as a
+    plain-text download (200, text/plain, correct filename). `/relay/<id>/resolve/`
+    is POST-only and not requested here.
+  - `tests/test_severity_display.py`: for each of gray/green/yellow/orange/red,
+    the rendered guidance card contains an inline SVG icon, the severity word,
+    and the `sev-<severity>` color class.
+  - `tests/test_sources_required.py`: runs the guidance validation against the
+    real `data/guidance.json`. Asserts no structural errors (unknown ids,
+    missing contact-ground text, invalid triggers), that every rule resolves
+    to at least one real source, that TODO-sourced actions stay hidden from
+    the card, and that strict mode reports the pending human source
+    verification.
+  - `tests/test_vendor_bundled.py`: the HTMX and Plotly vendor files exist
+    and are non-trivial; every template reference uses
+    `{% static 'vendor/...' %}`; no template loads from a CDN; `app.css` has
+    no `@import` or external `url()`; the base template loads bundled HTMX.
+  - No application-code changes were required: the tests passed on the
+    current codebase as-is. One demonstration was run (see Acceptance check).
+  - Full suite: 265 passed, 1 xfailed.
 
 ## Acceptance check
 
@@ -428,6 +466,14 @@ Source: "AstroPulse: OpenCode Build Plan" (docs/AstroPulse OpenCode Build Plan.p
   `RelayItem.action_taken`; the action text then appears in `/relay/export/`.
   `calm_week` and `drift_day6` produce the same weekly score when both have the
   same number of completed check-ins and logged actions.
+- Stage 10 safety tests: the full suite is green (265 passed, 1 xfailed).
+  Deliberate-violation demonstration for the URL test — adding
+  `<img src="https://example.com/tracker.png">` to
+  `core/templates/core/_action_done.html` made
+  `tests/test_no_external_urls.py` fail with
+  `core/templates/core/_action_done.html:3: external URL reference 'https://'
+  in: <img src="https://example.com/tracker.png" alt="">`; the violation was
+  then reverted and the suite went green again.
 
 ## Needs a source
 
@@ -529,5 +575,6 @@ and flip `verified` to `true` by hand after checking the page:
 1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md
    (pending sign-off; findings by rule id). Includes the drift-guidance gate
    (`DRIFT_GUIDANCE_APPROVED`) which must be flipped after sign-off.
-2. Stage 10: Hardening, accessibility and the offline audit.
+2. Stage 10 remainder: accessibility and the offline audit (safety tests are
+   done; see docs/PROGRESS.md "Stage 10 progress").
 3. Polish: friendlier engine reason wording and per-indicator units in reasons.
