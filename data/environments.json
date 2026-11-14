@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "key": "station",
+    "label": "Space station",
+    "comms_delay_text": "About 20 minutes each way",
+    "available_equipment": ["resting_hr", "temperature", "spo2"],
+    "extra_prompts": [
+      "Did you use the treadmill or resistance device today?",
+      "Any headaches or congestion from the station air?"
+    ]
+  },
+  {
+    "key": "transit",
+    "label": "Transit vehicle",
+    "comms_delay_text": "Up to 22 minutes each way",
+    "available_equipment": ["resting_hr", "temperature", "spo2"],
+    "extra_prompts": [
+      "Has motion sickness changed what you could eat today?",
+      "Did you manage your scheduled exercise window?"
+    ]
+  },
+  {
+    "key": "rover",
+    "label": "Rover",
+    "comms_delay_text": "Up to 40 minutes each way",
+    "available_equipment": ["resting_hr", "temperature"],
+    "extra_prompts": [
+      "How much time did you spend driving versus on foot?",
+      "Did the rover vibration make sleep or rest harder?"
+    ]
+  },
+  {
+    "key": "surface_base",
+    "label": "Surface base",
+    "comms_delay_text": "About 4 minutes each way",
+    "available_equipment": ["resting_hr", "temperature", "spo2"],
+    "extra_prompts": [
+      "How is the dust affecting your breathing?",
+      "Did the lighter gravity change your workout load?"
+    ]
+  }
+]

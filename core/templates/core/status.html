@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block title %}Status{% endblock %}
+{% block content %}
+<h2>Status</h2>
+{% if crew is None %}
+<p>No data yet. Complete a <a href="{% url 'core:checkin' %}">daily check-in</a> first.</p>
+{% else %}
+<p class="placeholder-note">
+  For {{ crew }}. Personal thresholds are placeholders, not clinical values.
+</p>
+<div class="status-list">
+  {% for entry in entries %}
+  <section class="status-row sev-{{ entry.result.severity }}">
+    <div class="status-row-head">
+      <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=entry.display.shape only %}</span>
+      <span class="sev-word">{{ entry.display.word }}</span>
+      <span class="sev-name">({{ entry.result.severity }})</span>
+      <h3 class="status-label">{{ entry.label }}</h3>
+      {% if entry.value is not None %}
+      <span class="status-value">{{ entry.value }} {{ entry.unit }}</span>
+      {% endif %}
+      {% if entry.is_simulated %}
+      <span class="badge-simulated">SIMULATED</span>
+      {% endif %}
+    </div>
+    {% if entry.result.reasons %}
+    <ul class="reasons">
+      {% for reason in entry.result.reasons %}<li>{{ reason }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
