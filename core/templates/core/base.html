@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AstroPulse{% endblock %}</title>
+  {# Bundled local CSS only: no CDN, no web fonts, no external URLs. #}
+  <link rel="stylesheet" href="{% static 'core/app.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="site-title">AstroPulse</h1>
+  </header>
+
+  {# Visible status banner slot: offline / SIMULATED. #}
+  {% block status_banner %}
+  <div class="status-banner" role="status" aria-label="System status">
+    <span class="status-item">Offline</span>
+    <span class="status-item status-simulated">SIMULATED</span>
+  </div>
+  {% endblock %}
+
+  <main class="site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>Decision support, not a diagnosis.</p>
+  </footer>
+</body>
+</html>
