@@ -1,6 +1,8 @@
 """Tests for the Stage 4 body map and status dashboard."""
 from datetime import timedelta
+import re
 from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 from django.core.management import call_command
@@ -20,6 +22,7 @@ pytestmark = pytest.mark.django_db
 
 DEMO_NAME = "Demo crew (SIMULATED)"
 ENTER_TRIGGER = 'hx-trigger="click, keyup[key===\'Enter\']"'
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # --- data mapping -------------------------------------------------------
@@ -75,6 +78,47 @@ def test_all_regions_render_focusable_with_aria_labels():
     # Severity word appears next to each region (icon + text + color).
     for word in ("Normal", "Watch", "Concern", "Contact ground", "Not enough data"):
         assert word in content
+
+
+def test_real_region_buttons_work_with_or_without_htmx():
+    call_command("seed_demo", scenario="drift_day6", reset=True)
+    response = Client().get("/status/")
+    content = response.content.decode()
+    assert content.count('class="region-select sev-') == len(REGION_LABELS)
+    assert 'id="region-panel" role="region" aria-live="polite"' in content
+    for name in REGION_LABELS:
+        assert f'hx-get="/region/{name}/' in content
+        assert 'hx-target="#region-panel"' in content
+
+    # A plain form submission lands on a complete page when HTMX/JavaScript is off.
+    fallback = Client().get("/region/head/")
+    assert fallback.status_code == 200
+    fallback_content = fallback.content.decode()
+    assert "AstroPulse" in fallback_content
+    assert "Decision support, not a diagnosis." in fallback_content
+    assert "Sleep" in fallback_content
+
+
+def test_3d_bodymap_assets_are_local_and_the_svg_fallback_stays_available():
+    template = (BASE_DIR / "core/templates/core/status.html").read_text(encoding="utf-8")
+    bundle = BASE_DIR / "core/static/vendor/bodymap3d.js"
+    bodymap_script = BASE_DIR / "core/static/core/bodymap3d.js"
+    model = BASE_DIR / "core/static/core/models/astropulse_body.glb"
+    assert bundle.is_file() and bundle.stat().st_size > 100_000
+    assert bodymap_script.is_file()
+    assert model.is_file() and model.stat().st_size > 100_000
+    assert "{% static 'vendor/bodymap3d.js' %}" in template
+    assert "{% static 'core/bodymap3d.js' %}" in template
+    assert "{% static 'core/models/astropulse_body.glb' %}" in template
+    assert 'data-svg-fallback' in template
+    assert 'data-three-stage hidden' in template
+    urls = set(re.findall(r"https?://[^\s\"'`<>]+", bundle.read_text(encoding="utf-8")))
+    assert urls == {"http://www.w3.org/1999/xhtml"}
+    for path in (
+        BASE_DIR / "core/static/core/app.css",
+        BASE_DIR / "core/static/core/app.js",
+    ):
+        assert not re.search(r"https?://", path.read_text(encoding="utf-8"))
 
 
 def test_every_severity_renders_icon_and_text_not_color_only():

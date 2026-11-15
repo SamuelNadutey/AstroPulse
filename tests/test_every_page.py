@@ -65,7 +65,7 @@ def test_htmx_field_partial_returns_200(client, scenario, url):
 @pytest.mark.parametrize("url", REGION_PARTIALS)
 def test_region_partials_return_200_and_simulated_badge(client, scenario, url):
     call_command("seed_demo", scenario=scenario, reset=True)
-    response = client.get(f"/{url}")
+    response = client.get(f"/{url}", HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert SIMULATED in response.content, f"SIMULATED badge missing on {url}"
 

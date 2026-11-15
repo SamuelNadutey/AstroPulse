@@ -1,0 +1,3 @@
+<span class="status-pill{% if compact %} compact{% endif %} sev-{{ severity }}">
+  {% include "core/_status_glyph.html" with severity=severity only %}
+</span>

@@ -1,57 +1,39 @@
 {% extends "core/base.html" %}
-{% block title %}Trend — {{ indicator.label }}{% endblock %}
-{% block content %}
 {% load static %}
-{# Bundled Plotly only: no CDN, no external URLs. #}
+{% block title %}Trends · {{ indicator.label }} · AstroPulse{% endblock %}
+{% block content %}
 <script src="{% static 'vendor/plotly-basic.min.js' %}" defer></script>
-
-<h2>{{ indicator.label }} trend</h2>
-<p class="placeholder-note">
-  Personal thresholds are placeholders, not clinical values.
-</p>
-
-<form id="trend-selector" class="trend-selector">
-  <label for="trend-indicator">View trend for:</label>
-  <select id="trend-indicator" name="indicator">
-    {% for ind in indicators %}
-    <option value="{{ ind.key }}" {% if ind.key == indicator.key %}selected{% endif %}>
-      {{ ind.label }}
-    </option>
-    {% endfor %}
-  </select>
-</form>
-
-<div id="trend-container">
-  {% include "core/_trend_chart.html" %}
+<p class="eyebrow">Personal history</p>
+<h1 class="page-heading">Patterns, not snapshots</h1>
+<p class="page-intro">Review readings against the personal reference window. Forecasts are uncertain projections and thresholds are placeholders, not clinical values.</p>
+<div class="trend-toolbar">
+  <form id="trend-selector" aria-label="Choose an indicator">
+    <label for="trend-indicator">View trend for
+      <select id="trend-indicator" name="indicator">
+        {% for ind in indicators %}<option value="{{ ind.key }}" {% if ind.key == indicator.key %}selected{% endif %}>{{ ind.label }}</option>{% endfor %}
+      </select>
+    </label>
+  </form>
+  {% if is_simulated %}<span class="badge-simulated">SIMULATED</span>{% endif %}
 </div>
-
+<section class="panel chart-panel" aria-label="Trend chart and interpretation">
+  <div class="panel-heading"><div><p class="eyebrow">{{ indicator.label }}</p><h2>{{ indicator.label }} trend</h2></div>{% if status_result %}{% include "core/_status_pill.html" with severity=status_result.severity %}{% endif %}</div>
+  <div id="trend-container">{% include "core/_trend_chart.html" %}</div>
+</section>
 <script>
   function renderTrend() {
     const dataEl = document.getElementById("trend-figure-data");
     const plotEl = document.getElementById("trend-plot");
-    if (!dataEl || !plotEl || typeof Plotly === "undefined") {
-      return;
-    }
+    if (!dataEl || !plotEl || typeof Plotly === "undefined") return;
     const figure = JSON.parse(dataEl.textContent);
-    Plotly.newPlot("trend-plot", figure, {
-      displaylogo: false,
-      responsive: true,
-    });
+    Plotly.newPlot(plotEl, figure.data, figure.layout, {displaylogo: false, responsive: true});
   }
-  renderTrend();
-  document.body.addEventListener("htmx:afterSwap", function (evt) {
-    if (evt.target && evt.target.id === "trend-container") {
-      renderTrend();
-    }
+  document.addEventListener("DOMContentLoaded", renderTrend);
+  document.body.addEventListener("htmx:afterSwap", function (event) {
+    if (event.target && event.target.id === "trend-container") renderTrend();
   });
-  document
-    .getElementById("trend-indicator")
-    .addEventListener("change", function () {
-      const key = this.value;
-      htmx.get("/trend/" + key + "/chart/", {
-        target: "#trend-container",
-        swap: "innerHTML",
-      });
-    });
+  document.getElementById("trend-indicator").addEventListener("change", function () {
+    htmx.get("/trend/" + this.value + "/chart/", {target: "#trend-container", swap: "innerHTML"});
+  });
 </script>
 {% endblock %}

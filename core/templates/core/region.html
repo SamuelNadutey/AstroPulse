@@ -1,0 +1,7 @@
+{% extends "core/base.html" %}
+{% block title %}{{ region.label }} · Today · AstroPulse{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{% url 'core:status' %}">Today</a> · Body map</p>
+<h1 class="page-heading">{{ region.label }}</h1>
+<div class="panel dashboard-panel" id="region-panel">{% include "core/_region_detail.html" %}</div>
+{% endblock %}

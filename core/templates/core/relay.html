@@ -1,109 +1,57 @@
 {% extends "core/base.html" %}
 {% load static %}
-
-{% block title %}Relay summary — AstroPulse{% endblock %}
-
+{% block title %}Relay · AstroPulse{% endblock %}
 {% block content %}
 <section class="relay-page" aria-labelledby="relay-heading">
-  <h1 id="relay-heading">Relay summary</h1>
-
+  <p class="eyebrow">Ground relay</p>
+  <h1 class="page-heading" id="relay-heading">Relay summary</h1>
+  <p class="page-intro">Review locally queued items. Nothing is transmitted automatically; export is available when you choose.</p>
   {% if crew is None %}
-    <p>No crew data available.</p>
+    <div class="panel empty-state"><h2>No crew data available</h2><p>Complete a check-in to begin building a local record.</p></div>
   {% else %}
-    <p class="relay-meta">
-      Crew: <strong>{{ crew.name }}</strong> ·
-      Date: <strong>{{ date|date:"Y-m-d" }}</strong>
-      {% if app_blackout %}
-        <span class="badge badge-offline">Blackout active</span>
-      {% endif %}
-      {% if any_simulated %}
-        <span class="badge badge-simulated">SIMULATED</span>
-      {% endif %}
-    </p>
-
+    <p class="relay-meta">Crew: <strong>{{ crew.name }}</strong> · Date: <strong>{{ date|date:"Y-m-d" }}</strong>{% if app_blackout %} <span class="badge-simulated">Blackout active</span>{% endif %}{% if any_simulated %} <span class="badge-simulated">SIMULATED</span>{% endif %}</p>
     <div class="relay-actions">
-      <a class="button" href="{% url 'core:relay_export' %}{% if request.GET.date %}?date={{ request.GET.date }}{% endif %}">
-        Download relay summary
-      </a>
-      <button
-        type="button"
-        class="button button-secondary"
-        id="relay-copy-btn"
-        data-copy-url="{% url 'core:relay_export' %}{% if request.GET.date %}?date={{ request.GET.date }}{% endif %}"
-      >
-        Copy to clipboard
-      </button>
+      <a class="button primary" href="{% url 'core:relay_export' %}{% if request.GET.date %}?date={{ request.GET.date }}{% endif %}">Download relay summary</a>
+      <button type="button" class="button secondary" id="relay-copy-btn" data-copy-url="{% url 'core:relay_export' %}{% if request.GET.date %}?date={{ request.GET.date }}{% endif %}">Copy summary</button>
     </div>
 
-    <h2>Open relay items</h2>
-    {% if open_items %}
-      <ul class="relay-list">
-        {% for item in open_items %}
-          {% include "core/_relay_item.html" %}
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No open relay items.</p>
-    {% endif %}
+    <section class="relay-section" aria-labelledby="open-relay-heading">
+      <h2 id="open-relay-heading">Open relay items</h2>
+      {% if open_items %}<ul class="relay-list">{% for item in open_items %}{% include "core/_relay_item.html" %}{% endfor %}</ul>
+      {% else %}<div class="panel empty-state"><h3>No open relay items</h3><p>New items created during an offline period will appear here.</p></div>{% endif %}
+    </section>
 
-    <h2>Flagged statuses (last 7 days)</h2>
-    {% if recent_items %}
-      <ul class="relay-list relay-list-recent">
-        {% for item in recent_items %}
+    <section class="relay-section" aria-labelledby="recent-relay-heading">
+      <h2 id="recent-relay-heading">Flagged statuses · last 7 days</h2>
+      {% if recent_items %}<ul class="relay-list relay-list-recent">{% for item in recent_items %}
         <li class="relay-card severity-{{ item.severity }}">
-          <span class="relay-date">{{ item.for_date|date:"Y-m-d" }}</span>
-          <span class="relay-indicator">{{ item.indicator_key }}</span>
-          <span class="relay-severity">{{ item.severity }}</span>
+          <span class="relay-date">{{ item.for_date|date:"Y-m-d" }}</span><span class="relay-indicator">{{ item.indicator_key }}</span>
+          <span class="relay-severity">{% include "core/_status_glyph.html" with severity=item.severity only %}</span>
           <p class="relay-headline">{{ item.headline }}</p>
-          {% if item.reason %}
-            <p class="relay-reason">{{ item.reason }}</p>
-          {% endif %}
-          {% if item.action_taken %}
-            <p class="relay-action">Action taken: {{ item.action_taken }}</p>
-          {% endif %}
+          {% if item.reason %}<p class="relay-reason">{{ item.reason }}</p>{% endif %}
+          {% if item.action_taken %}<p class="relay-action">Action taken: {{ item.action_taken }}</p>{% endif %}
         </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No flagged indicators in the last 7 days.</p>
-    {% endif %}
+      {% endfor %}</ul>{% else %}<p>No flagged indicators in the last 7 days.</p>{% endif %}
+    </section>
 
-    <h2>Open contact-ground items</h2>
-    {% if contact_open %}
-      <ul class="relay-list relay-list-contact">
-        {% for item in contact_open %}
-        <li class="relay-card severity-{{ item.severity }}">
-          <span class="relay-date">{{ item.for_date|date:"Y-m-d" }}</span>
-          <span class="relay-indicator">{{ item.indicator_key }}</span>
-          <p class="relay-headline">{{ item.headline }}</p>
-        </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No unresolved contact-ground items.</p>
-    {% endif %}
+    <section class="relay-section" aria-labelledby="contact-heading">
+      <h2 id="contact-heading">Open contact-ground items</h2>
+      {% if contact_open %}<ul class="relay-list relay-list-contact">{% for item in contact_open %}
+        <li class="relay-card severity-{{ item.severity }}"><span class="relay-date">{{ item.for_date|date:"Y-m-d" }}</span><span class="relay-indicator">{{ item.indicator_key }}</span><span class="relay-severity">{% include "core/_status_glyph.html" with severity=item.severity only %}</span><p class="relay-headline">{{ item.headline }}</p></li>
+      {% endfor %}</ul>{% else %}<p>No unresolved contact-ground items.</p>{% endif %}
+    </section>
   {% endif %}
 </section>
-
 <script>
 (function () {
-  const btn = document.getElementById('relay-copy-btn');
+  const btn = document.getElementById("relay-copy-btn");
   if (!btn) return;
-  btn.addEventListener('click', function () {
-    const url = btn.getAttribute('data-copy-url');
-    fetch(url, { headers: { 'HX-Request': '1' } })
+  btn.addEventListener("click", function () {
+    fetch(btn.getAttribute("data-copy-url"), {headers: {"HX-Request": "1"}})
       .then(function (response) { return response.text(); })
-      .then(function (text) {
-        return navigator.clipboard.writeText(text);
-      })
-      .then(function () {
-        const original = btn.textContent;
-        btn.textContent = 'Copied';
-        setTimeout(function () { btn.textContent = original; }, 1500);
-      })
-      .catch(function () {
-        btn.textContent = 'Copy failed';
-      });
+      .then(function (text) { return navigator.clipboard.writeText(text); })
+      .then(function () { btn.textContent = "Copied"; })
+      .catch(function () { btn.textContent = "Copy unavailable"; });
   });
 })();
 </script>

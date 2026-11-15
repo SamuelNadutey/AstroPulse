@@ -21,11 +21,25 @@ TREND_DAYS = 14
 # Band half-width in robust spreads around the baseline median (placeholder).
 BAND_SPREADS = 2.0
 
-# Limit line colours (Okabe-Ito derived, placeholder only).
+# Chart colors mirror the app.css design tokens; keep the palette test in sync.
+CHART_PALETTE = {
+    "text": "#121b18",
+    "muted": "#5f706b",
+    "line": "#cfd6d2",
+    "paper": "#ffffff",
+    "reading": "#0c4a45",
+    "brand": "#0f766e",
+    "band": "#eef6f3",
+    "insufficient": "#6b7a75",
+    "normal": "#15805d",
+    "watch": "#926d0e",
+    "concern": "#b45309",
+    "contact": "#b3433d",
+}
 _LIMIT_COLOUR = {
-    "red": "#d55e00",
-    "orange": "#e69f00",
-    "yellow": "#b88600",
+    "red": CHART_PALETTE["contact"],
+    "orange": CHART_PALETTE["concern"],
+    "yellow": CHART_PALETTE["watch"],
 }
 
 
@@ -103,7 +117,7 @@ def _forecast_traces(readings):
             "x": x,
             "y": line_y,
             "mode": "lines",
-            "line": {"dash": "dash", "width": 2, "color": "#1f77b4"},
+            "line": {"dash": "dash", "width": 2, "color": CHART_PALETTE["brand"]},
             "name": "Forecast (uncertain)",
         },
     ]
@@ -138,8 +152,8 @@ def build_trend_figure(indicator, readings, baseline, limits_entry=None):
             "y": values,
             "mode": "lines+markers",
             "name": label,
-            "line": {"width": 2},
-            "marker": {"size": 6},
+            "line": {"width": 2, "color": CHART_PALETTE["reading"]},
+            "marker": {"size": 6, "color": CHART_PALETTE["reading"]},
         }
     )
 
@@ -174,7 +188,7 @@ def build_trend_figure(indicator, readings, baseline, limits_entry=None):
                 "mode": "lines",
                 "line": {"width": 0},
                 "fill": "tonexty",
-                "fillcolor": "rgba(128, 128, 128, 0.15)",
+                "fillcolor": CHART_PALETTE["band"],
                 "name": f"Typical range (x{BAND_SPREADS} spreads)",
                 "showlegend": True,
             }
@@ -184,8 +198,11 @@ def build_trend_figure(indicator, readings, baseline, limits_entry=None):
 
     layout = {
         "title": {"text": f"{label} trend", "x": 0.5},
-        "xaxis": {"title": "Date", "type": "category"},
-        "yaxis": {"title": unit},
+        "font": {"family": "system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif", "size": 12, "color": CHART_PALETTE["text"]},
+        "paper_bgcolor": CHART_PALETTE["paper"],
+        "plot_bgcolor": CHART_PALETTE["paper"],
+        "xaxis": {"title": {"text": "Date", "font": {"size": 12}}, "type": "category", "gridcolor": CHART_PALETTE["line"], "tickfont": {"size": 12, "color": CHART_PALETTE["muted"]}},
+        "yaxis": {"title": {"text": unit, "font": {"size": 12}}, "gridcolor": CHART_PALETTE["line"], "tickfont": {"size": 12, "color": CHART_PALETTE["muted"]}},
         "showlegend": True,
         "legend": {"orientation": "h", "y": -0.2},
         "margin": {"l": 60, "r": 20, "t": 60, "b": 80},
@@ -220,7 +237,7 @@ def build_trend_figure(indicator, readings, baseline, limits_entry=None):
                     "yref": "y",
                     "text": f"{sev} limit ({threshold})",
                     "showarrow": False,
-                    "font": {"size": 10, "color": _LIMIT_COLOUR[sev]},
+                    "font": {"size": 12, "color": _LIMIT_COLOUR[sev]},
                     "bgcolor": "rgba(255, 255, 255, 0.7)",
                 }
             )

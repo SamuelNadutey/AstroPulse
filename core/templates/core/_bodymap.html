@@ -1,30 +1,21 @@
-{% for region in regions %}
-<g id="bm-{{ region.name }}"
-   class="bm-region sev-{{ region.severity }}"
-   role="button"
-   tabindex="0"
-   aria-label="{{ region.label }} — {{ region.display.word }} ({{ region.severity }})"
-   hx-get="{% url 'core:region_detail' region.name %}?date={{ date|date:'Y-m-d' }}"
-   hx-target="#region-panel"
-   hx-swap="innerHTML"
-   hx-trigger="click, keyup[key==='Enter']">
-  {% if region.name == "head" %}
-  <circle class="bm-shape" cx="70" cy="30" r="18"/>
-  <g class="bm-label" transform="translate(130,23)">{% include "core/_severity_icon.html" with shape=region.display.shape only %}<text class="bm-label-text" x="18" y="7">{{ region.display.word }}</text></g>
-  {% elif region.name == "chest" %}
-  <rect class="bm-shape" x="48" y="52" width="44" height="30" rx="8"/>
-  <g class="bm-label" transform="translate(130,59)">{% include "core/_severity_icon.html" with shape=region.display.shape only %}<text class="bm-label-text" x="18" y="7">{{ region.display.word }}</text></g>
-  {% elif region.name == "lungs" %}
-  <ellipse class="bm-shape" cx="61" cy="67" rx="8" ry="11"/>
-  <ellipse class="bm-shape" cx="79" cy="67" rx="8" ry="11"/>
-  <g class="bm-label" transform="translate(2,60)">{% include "core/_severity_icon.html" with shape=region.display.shape only %}<text class="bm-label-text" x="18" y="7">{{ region.display.word }}</text></g>
-  {% elif region.name == "torso" %}
-  <rect class="bm-shape" x="52" y="86" width="36" height="30" rx="6"/>
-  <g class="bm-label" transform="translate(130,93)">{% include "core/_severity_icon.html" with shape=region.display.shape only %}<text class="bm-label-text" x="18" y="7">{{ region.display.word }}</text></g>
-  {% else %}
-  <rect class="bm-shape" x="55" y="120" width="12" height="60" rx="5"/>
-  <rect class="bm-shape" x="73" y="120" width="12" height="60" rx="5"/>
-  <g class="bm-label" transform="translate(130,143)">{% include "core/_severity_icon.html" with shape=region.display.shape only %}<text class="bm-label-text" x="18" y="7">{{ region.display.word }}</text></g>
-  {% endif %}
-</g>
-{% endfor %}
+<svg class="bodymap" viewBox="0 0 300 430" role="img" aria-label="Front view body map with five selectable regions">
+  <defs>
+    <linearGradient id="body-fill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbe5e2"/><stop offset="1" stop-color="#a7b8b4"/></linearGradient>
+  </defs>
+  <circle cx="150" cy="47" r="27" fill="url(#body-fill)" stroke="#657b76" stroke-width="2"/>
+  <path d="M121 83 Q150 72 179 83 L194 172 L178 244 L172 394 L146 394 L141 260 L136 394 L110 394 L105 244 L89 172 Z" fill="url(#body-fill)" stroke="#657b76" stroke-width="2"/>
+  <path d="M96 91 76 124 59 208 M183 91 204 124 221 208" fill="none" stroke="#b7c5c1" stroke-width="20" stroke-linecap="round"/>
+  {% for region in regions %}
+  <g id="bm-{{ region.name }}" class="bm-region sev-{{ region.severity }}" role="button" tabindex="0"
+     aria-label="{{ region.label }} — {{ region.display.word }} ({{ region.severity }})"
+     hx-get="{% url 'core:region_detail' region.name %}?date={{ date|date:'Y-m-d' }}" hx-target="#region-panel" hx-swap="innerHTML"
+     hx-trigger="click, keyup[key==='Enter']">
+    {% if region.name == "head" %}<circle class="bm-shape" cx="150" cy="47" r="23"/><path d="M174 47 H242" stroke="currentColor"/><text class="bm-label-text" x="248" y="52">Head</text>
+    {% elif region.name == "chest" %}<path class="bm-shape" d="M124 91 Q150 82 176 91 L183 151 H117 Z"/><path d="M183 112 H242" stroke="currentColor"/><text class="bm-label-text" x="248" y="117">Chest</text>
+    {% elif region.name == "lungs" %}<ellipse class="bm-shape" cx="140" cy="122" rx="10" ry="21"/><ellipse class="bm-shape" cx="160" cy="122" rx="10" ry="21"/><path d="M127 143 H55" stroke="currentColor"/><text class="bm-label-text" x="4" y="148">Lungs</text>
+    {% elif region.name == "torso" %}<path class="bm-shape" d="M119 153 H181 L174 229 H126 Z"/><path d="M181 190 H242" stroke="currentColor"/><text class="bm-label-text" x="248" y="195">Torso</text>
+    {% else %}<path class="bm-shape" d="M119 238 H143 L138 381 H112 Z M157 238 H181 L188 381 H162 Z"/><path d="M162 310 H55" stroke="currentColor"/><text class="bm-label-text" x="10" y="315">Legs</text>{% endif %}
+  </g>
+  {% endfor %}
+</svg>
+<p class="map-hint">Select a region to inspect its indicators.</p>

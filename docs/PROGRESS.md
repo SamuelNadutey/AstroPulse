@@ -589,6 +589,32 @@ and flip `verified` to `true` by hand after checking the page:
 - `src_statpearls_pulseox`: This URL is a StatPearls mirror. Replace with the canonical NCBI Bookshelf URL; authors and year not shown.
 - `src_nasa_std_3001_v1`: Revision C date taken from the document history (Sept 15, 2023); verify.
 
+## Figma UI integration (2026-11-15)
+
+### Done
+
+- Added the Figma reference source, project proposal, and a token/design audit under `ui-reference/` / `docs/` without importing or serving the React app.
+- Ported the design tokens and responsive application shell into Django templates: accessible navigation, live active-page state, skip link, simulated/local status chip, and the required footer.
+- Restyled Today, check-in, trends, relay, and progress around the existing Django behavior and data sources. Trend colors now use the CSS token palette; forecasts remain marked uncertain.
+- Added a local three.js 0.187.0 IIFE bundle, the body GLB, and a progressive WebGL map with status rings, hit targets, gutters, reset view, and a polite screen-reader announcement. The SVG and real region buttons remain the fallback and work without WebGL; HTMX enhancements use the same region endpoint.
+- Added design-system, chart palette, local asset, region-button, and body-map URL allow-list tests. Only the generated bundle may contain `http://www.w3.org/1999/xhtml`; `app.css` and `app.js` contain no URL strings.
+
+### In progress
+
+- Automated verification is pending: the available Python 3.14 interpreter has neither Django nor pytest installed, and the project requirements are not present in its package cache. `python -m pytest` stopped with `No module named pytest`.
+- Visual comparison is pending. The supplied Figma archive had no page screenshots; check `/status/` in calm, drift, and fever-blackout data at 1440px and 390px, with WebGL enabled and disabled.
+
+### Known issues
+
+- The WebGL success path and the browser-specific fallback have not been exercised in a browser in this workspace. The server-rendered SVG and button path is the no-JavaScript fallback.
+- Stage 10 remains incomplete: accessibility review, offline audit, guidance sourcing, source verification, and safety-owner sign-off remain outstanding.
+
+### Next
+
+1. Run `pytest` from a Python 3.11 environment with `requirements.txt` installed; fix any failures.
+2. Manually review the named screen sizes and WebGL states, including region selection by marker, label, keyboard button, and SVG fallback.
+3. Continue the Stage 10 source and safety-owner reviews already listed above.
+
 ## Next
 
 1. Safety owner review of data/guidance.json: see docs/GUIDANCE_REVIEW.md

@@ -29,6 +29,7 @@ from core.services import (
     SEVERITY_YELLOW,
     blackout_active_for,
     current_blackout,
+    get_environment,
     indicator_trend,
     load_indicators,
     log_action,
@@ -142,8 +143,8 @@ def _guidance_for(status_result, indicator_key):
 
 
 def home(request):
-    """Home page placeholder: confirms the Django project is running."""
-    return render(request, "core/home.html")
+    """Serve the Today dashboard at the root entry point."""
+    return status(request)
 
 
 def checkin(request):
@@ -213,8 +214,20 @@ def status(request):
         "overall": _overall([]),
         "crew": crew,
         "date": date,
+        "last_checkin": None,
+        "environment": None,
+        "hero_reason": "Complete a check-in to establish your personal baseline.",
+        "body_region_data": [],
     }
     if crew is not None:
+        context["last_checkin"] = CheckIn.objects.filter(
+            crew_member=crew
+        ).order_by("-date").first()
+        selected_checkin = CheckIn.objects.filter(
+            crew_member=crew, date=date
+        ).first() or context["last_checkin"]
+        if selected_checkin:
+            context["environment"] = get_environment(selected_checkin.environment)
         entries = run_status_for(crew, date)
         for entry in entries:
             entry["display"] = SEVERITY_DISPLAY[entry["result"].severity]
@@ -222,7 +235,26 @@ def status(request):
         context["regions"] = region_statuses(entries)
         for region in context["regions"]:
             region["display"] = SEVERITY_DISPLAY[region["severity"]]
+        context["body_region_data"] = [
+            {
+                "name": region["name"],
+                "label": region["label"],
+                "severity": region["severity"],
+                "word": region["display"]["word"],
+            }
+            for region in context["regions"]
+        ]
         context["overall"] = _overall(entries)
+        flagged = [
+            reason
+            for entry in entries
+            if entry["result"].severity in (SEVERITY_YELLOW, SEVERITY_ORANGE, SEVERITY_RED)
+            for reason in entry["result"].reasons
+        ]
+        if flagged:
+            context["hero_reason"] = flagged[0]
+        elif entries and context["overall"]["severity"] == SEVERITY_GREEN:
+            context["hero_reason"] = "Current readings are within the available personal reference and placeholder limit checks."
     return render(request, "core/status.html", context)
 
 
@@ -256,11 +288,13 @@ def region_detail(request, region: str):
             e["is_simulated"] for e in region_info["entries"]
         )
     region_info["display"] = SEVERITY_DISPLAY[region_info["severity"]]
-    return render(
-        request,
-        "core/_region_detail.html",
-        {"region": region_info, "date": date},
+    context = {"region": region_info, "date": date}
+    template = (
+        "core/_region_detail.html"
+        if request.headers.get("HX-Request")
+        else "core/region.html"
     )
+    return render(request, template, context)
 
 
 def trend(request, indicator_key: str):

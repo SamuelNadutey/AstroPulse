@@ -1,4 +1,4 @@
-"""HTMX and Plotly are bundled locally, not loaded from the internet.
+"""HTMX, Plotly, and the body-map renderer are bundled locally.
 
 Checks:
 - the vendor files exist under core/static/vendor/ and are non-trivial,
@@ -16,12 +16,13 @@ STATIC = BASE_DIR / "core" / "static"
 
 HTMX = STATIC / "vendor" / "htmx.min.js"
 PLOTLY = STATIC / "vendor" / "plotly-basic.min.js"
+BODYMAP3D = STATIC / "vendor" / "bodymap3d.js"
 
-TEMPLATE_RE = re.compile(r"(htmx\.min\.js|plotly-basic\.min\.js)")
+TEMPLATE_RE = re.compile(r"(htmx\.min\.js|plotly-basic\.min\.js|bodymap3d\.js)")
 
 
 def test_vendor_files_exist_and_are_non_trivial():
-    for path, name in ((HTMX, "htmx.min.js"), (PLOTLY, "plotly-basic.min.js")):
+    for path, name in ((HTMX, "htmx.min.js"), (PLOTLY, "plotly-basic.min.js"), (BODYMAP3D, "bodymap3d.js")):
         assert path.is_file(), f"missing bundled vendor file: {name}"
         assert path.stat().st_size > 10_000, f"{name} looks truncated"
 
@@ -65,3 +66,9 @@ def test_base_template_loads_bundled_htmx():
 def test_trend_template_loads_bundled_plotly():
     trend = (TEMPLATES / "core" / "trend.html").read_text(encoding="utf-8")
     assert "{% static 'vendor/plotly-basic.min.js' %}" in trend
+
+
+def test_status_template_loads_bundled_bodymap_after_local_model_path():
+    status = (TEMPLATES / "core" / "status.html").read_text(encoding="utf-8")
+    assert "{% static 'vendor/bodymap3d.js' %}" in status
+    assert "{% static 'core/models/astropulse_body.glb' %}" in status

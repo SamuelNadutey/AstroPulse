@@ -1,10 +1,14 @@
 {% extends "core/base.html" %}
-{% block title %}Daily check-in{% endblock %}
+{% block title %}Check-in · AstroPulse{% endblock %}
 {% block content %}
-<h2>Daily check-in</h2>
-<form method="post" action="{% url 'core:checkin' %}" class="checkin-form">
-  {% csrf_token %}
-  {% include "core/_form_fields.html" %}
-  <button type="submit">Save check-in</button>
-</form>
+<section class="page-narrow" aria-labelledby="checkin-heading">
+  <p class="eyebrow">Daily health record</p>
+  <h1 class="page-heading" id="checkin-heading">Today’s check-in</h1>
+  <p class="page-intro">Record the readings available in your current environment. Your entries are saved on this device.</p>
+  <form method="post" action="{% url 'core:checkin' %}" class="checkin-form">
+    {% csrf_token %}
+    {% include "core/_form_fields.html" %}
+    <div class="form-submit"><button class="button primary" type="submit">Save check-in</button></div>
+  </form>
+</section>
 {% endblock %}

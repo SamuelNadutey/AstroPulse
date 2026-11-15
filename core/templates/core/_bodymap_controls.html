@@ -1,0 +1,13 @@
+<div class="region-button-list" role="group" aria-label="Choose a body region">
+  {% for region in regions %}
+  <form method="get" action="{% url 'core:region_detail' region.name %}" class="region-select-form">
+    <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+    <button type="submit" class="region-select sev-{{ region.severity }}" aria-label="{{ region.label }} — {{ region.display.word }} ({{ region.severity }})"
+        data-region="{{ region.name }}" data-region-url="{% url 'core:region_detail' region.name %}?date={{ date|date:'Y-m-d' }}"
+        hx-get="{% url 'core:region_detail' region.name %}?date={{ date|date:'Y-m-d' }}" hx-target="#region-panel" hx-swap="innerHTML">
+      <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape=region.display.shape only %}</span>
+      <span>{{ region.label }}</span><small>{{ region.display.word }}</small>
+    </button>
+  </form>
+  {% endfor %}
+</div>

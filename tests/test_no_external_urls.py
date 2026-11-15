@@ -7,7 +7,7 @@ anywhere else).
 
 Two exemptions, both deliberate:
 
-1. ``core/static/vendor/`` (the bundled HTMX and Plotly artifacts) is exempt
+1. ``core/static/vendor/`` (bundled HTMX, Plotly, and three.js artifacts) is exempt
    from the literal-URL check. These are third-party minified files; their
    URLs occur only inside namespace/DTD identifier strings such as
    ``http://www.w3.org/2000/svg`` and inside internal JS code (for example
@@ -15,6 +15,9 @@ Two exemptions, both deliberate:
    without invalidating the vendored artifact, so we do not rewrite them.
    Templates must reference the vendor files via ``{% static 'vendor/...' %}``;
    that is enforced by tests/test_vendor_bundled.py.
+   The body-map bundle has an additional strict check allowing only its inert
+   ``http://www.w3.org/1999/xhtml`` XML namespace string; app.css and app.js
+   must contain no URL-shaped strings.
 
 2. ``_guidance_card.html`` (the citation partial) may display a source URL as
    plain text. A URL on a citation-partial line is allowed only if the line

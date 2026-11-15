@@ -1,0 +1,16 @@
+<span class="status-display sev-{{ severity }}">
+  <span class="sev-icon" aria-hidden="true">
+    {% if severity == "gray" %}{% include "core/_severity_icon.html" with shape="circle-empty" only %}
+    {% elif severity == "green" %}{% include "core/_severity_icon.html" with shape="circle" only %}
+    {% elif severity == "yellow" %}{% include "core/_severity_icon.html" with shape="triangle" only %}
+    {% elif severity == "orange" %}{% include "core/_severity_icon.html" with shape="diamond" only %}
+    {% else %}{% include "core/_severity_icon.html" with shape="octagon" only %}{% endif %}
+  </span>
+  <span class="status-word">
+    {% if severity == "gray" %}Not enough data
+    {% elif severity == "green" %}Normal
+    {% elif severity == "yellow" %}Watch
+    {% elif severity == "orange" %}Concern
+    {% else %}Contact ground{% endif %}
+  </span>
+</span>

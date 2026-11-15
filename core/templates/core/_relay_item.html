@@ -1,7 +1,7 @@
 <li class="relay-card severity-{{ item.severity }}" id="relay-item-{{ item.pk }}">
   <span class="relay-date">{{ item.for_date|date:"Y-m-d" }}</span>
   <span class="relay-indicator">{{ item.indicator_key }}</span>
-  <span class="relay-severity">{{ item.severity }}</span>
+  <span class="relay-severity">{% include "core/_status_glyph.html" with severity=item.severity only %}</span>
   <p class="relay-headline">{{ item.headline }}</p>
   {% if item.reason %}
     <p class="relay-reason">{{ item.reason }}</p>
