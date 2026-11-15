@@ -593,6 +593,8 @@ and flip `verified` to `true` by hand after checking the page:
 
 ### Done
 
+- Added a project README covering setup, demo seeding, app workflows, architecture,
+  tests, data handling, and safety limitations.
 - Added the Figma reference source, project proposal, and a token/design audit under `ui-reference/` / `docs/` without importing or serving the React app.
 - Ported the design tokens and responsive application shell into Django templates: accessible navigation, live active-page state, skip link, simulated/local status chip, and the required footer.
 - Restyled Today, check-in, trends, relay, and progress around the existing Django behavior and data sources. Trend colors now use the CSS token palette; forecasts remain marked uncertain.
