@@ -14,7 +14,7 @@
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="{% url 'core:status' %}" aria-label="AstroPulse home">
-        <span class="brand-mark" aria-hidden="true">⌁</span>
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h4l2.2-5 4.2 10 2.1-5H21"/></svg></span>
         <span><strong>ASTRO</strong>PULSE</span>
       </a>
       <div class="topbar-tools">
@@ -31,11 +31,11 @@
       <div>
         <p class="nav-label">MISSION HEALTH</p>
         <nav class="site-nav" aria-label="Main navigation">
-          <a href="{% url 'core:status' %}" {% if request.resolver_match.url_name == 'status' or request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'region_detail' %}aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">◉</span>Today</a>
-          <a href="{% url 'core:checkin' %}" {% if request.resolver_match.url_name == 'checkin' or request.resolver_match.url_name == 'checkin_fields' %}aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">＋</span>Check-in</a>
-          <a href="{% url 'core:trend' 'resting_hr' %}" {% if request.resolver_match.url_name == 'trend' or request.resolver_match.url_name == 'trend_chart' %}aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">⌁</span>Trends</a>
-          <a href="{% url 'core:relay' %}" {% if request.resolver_match.url_name == 'relay' or request.resolver_match.url_name == 'relay_export' %}aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">↗</span>Relay</a>
-          <a href="{% url 'core:progress' %}" {% if request.resolver_match.url_name == 'progress' %}aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">▤</span>Progress</a>
+          <a href="{% url 'core:status' %}" {% if request.resolver_match.url_name == 'status' or request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'region_detail' %}aria-current="page"{% endif %}><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>Today</a>
+          <a href="{% url 'core:checkin' %}" {% if request.resolver_match.url_name == 'checkin' or request.resolver_match.url_name == 'checkin_fields' %}aria-current="page"{% endif %}><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="9"/></svg>Check-in</a>
+          <a href="{% url 'core:trend' 'resting_hr' %}" {% if request.resolver_match.url_name == 'trend' or request.resolver_match.url_name == 'trend_chart' %}aria-current="page"{% endif %}><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 19V5M4 19h16M6.5 15l4-4 3.2 2.5 5.8-7"/><path d="M15.5 6.5h4v4"/></svg>Trends</a>
+          <a href="{% url 'core:relay' %}" {% if request.resolver_match.url_name == 'relay' or request.resolver_match.url_name == 'relay_export' %}aria-current="page"{% endif %}><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m21 3-7.5 18-3.7-7.8L2 9.5 21 3Z"/><path d="m9.8 13.2 5-5"/></svg>Relay</a>
+          <a href="{% url 'core:progress' %}" {% if request.resolver_match.url_name == 'progress' %}aria-current="page"{% endif %}><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h1M12 9h4M8 15h1M12 15h4"/></svg>Progress</a>
         </nav>
       </div>
       <div class="sidebar-bottom">
