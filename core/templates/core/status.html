@@ -4,6 +4,10 @@
 {% block content %}
 <span class="sr-only">AstroPulse is running</span>
 {% if crew is None %}
+  <div class="overall-banner sev-gray" role="status" aria-label="Overall status: Not enough data">
+    {% include "core/_status_glyph.html" with severity="gray" only %}
+    <span class="sev-name">(gray)</span>
+  </div>
   <section class="hero">
     <div class="hero-copy">
       <p class="eyebrow">Today · {{ date|date:"M j, Y" }}</p>
@@ -16,6 +20,22 @@
     <div><span>Environment</span><strong>Not recorded yet</strong></div>
     <div><span>Communication delay</span><strong>Available after check-in</strong></div>
     <div><span>Privacy</span><strong>Data stays on this device</strong></div>
+  </section>
+  <section class="status-section" aria-labelledby="empty-signals-heading">
+    <div class="panel-heading"><div><p class="eyebrow">Current overview</p><h2 id="empty-signals-heading">Readings are waiting for your first check-in</h2></div></div>
+    <div class="status-list">
+      {% for item in empty_indicators %}
+      <article class="status-row sev-gray">
+        <div class="status-row-head">
+          <span class="sev-icon" aria-hidden="true">{% include "core/_severity_icon.html" with shape="circle-empty" only %}</span>
+          <span class="sev-word">Not enough data</span><span class="sev-name">(gray)</span>
+          <h3>{{ item.label }}</h3>
+        </div>
+        <p class="placeholder-note">No {{ item.label|lower }} readings recorded yet{% if item.unit %} ({{ item.unit }}){% endif %}. Complete a check-in to add a reading.</p>
+      </article>
+      {% endfor %}
+    </div>
+    <p class="placeholder-note">To explore the sample dashboard, start it with <code>run-demo.ps1</code>. All sample readings are labeled SIMULATED.</p>
   </section>
 {% else %}
   <div class="overall-banner sev-{{ overall.severity }}" role="status" aria-label="Overall status: {{ overall.word }}">

@@ -218,6 +218,10 @@ def status(request):
         "environment": None,
         "hero_reason": "Complete a check-in to establish your personal baseline.",
         "body_region_data": [],
+        "empty_indicators": [
+            {"label": item["label"], "unit": item["unit"]}
+            for item in load_indicators()
+        ],
     }
     if crew is not None:
         context["last_checkin"] = CheckIn.objects.filter(
